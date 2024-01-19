@@ -1,0 +1,11 @@
+[package]
+name = "stimmgabel"
+version = "0.1.0"
+edition = "2021"
+description = "polyproto reference server and client implementation used for verifying other implementations of the protocol."
+license = "MIT"
+repository = "https://github.com/polyphony-chat/stimmgabel"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
