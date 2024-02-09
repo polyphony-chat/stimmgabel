@@ -10,3 +10,9 @@ repository = "https://github.com/polyphony-chat/stimmgabel"
 
 [workspace]
 members = ["client", "server"]
+
+[dependencies]
+server = { path = "./server" }
+client = { path = "./client" }
+clap = { version = "4.5.0", features = ["derive"] }
+tokio = { version = "1.36.0", features = ["rt", "macros", "net"] }
