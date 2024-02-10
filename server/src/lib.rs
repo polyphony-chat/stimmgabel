@@ -3,7 +3,7 @@ use axum::{
     Router,
 };
 
-async fn run() {
+pub async fn run(port: u16) {
     let server = Router::new()
         .route("/", get(hello_world))
         .route("/p2core/session/trust", post(hello_world))
