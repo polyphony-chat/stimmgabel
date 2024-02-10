@@ -16,3 +16,4 @@ server = { path = "./server" }
 client = { path = "./client" }
 clap = { version = "4.5.0", features = ["derive"] }
 tokio = { version = "1.36.0", features = ["rt", "macros", "net"] }
+colored = "2.1.0"
