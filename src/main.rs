@@ -30,7 +30,7 @@ struct Cli {
     #[arg(long, short)]
     waves: bool,
     /// Changes the set of "fail/pass" colors to more colorblind-friendly ones.
-    #[arg(long)]
+    #[arg(long, default_value_t = std::env::var("COLORBLIND").is_ok())]
     colorblind: bool,
 }
 

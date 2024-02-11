@@ -8,16 +8,6 @@ use lazy_static::lazy_static;
 
 #[cfg(test)]
 // Can be removed if the #[cfg(not(test))] is removed in main.rs
-static CLI_ARGS: crate::Cli = crate::Cli {
-    mode: crate::Mode::Server,
-    port: 8192,
-    verbose: false,
-    waves: false,
-    colorblind: false,
-};
-
-#[cfg(test)]
-// Can be removed if the #[cfg(not(test))] is removed in main.rs
 lazy_static! {
     static ref COLORS_PASS: (Color, Color) = match CLI_ARGS.colorblind {
         true => (Color::BrightBlue, Color::Blue),
@@ -26,6 +16,13 @@ lazy_static! {
     static ref COLORS_FAIL: (Color, Color) = match CLI_ARGS.colorblind {
         true => (Color::BrightYellow, Color::Yellow),
         false => (Color::BrightRed, Color::Red),
+    };
+    static ref CLI_ARGS: crate::Cli = crate::Cli {
+        mode: crate::Mode::Server,
+        port: 8192,
+        verbose: false,
+        waves: false,
+        colorblind: std::env::var("COLORBLIND").is_ok(),
     };
 }
 
