@@ -1,5 +1,6 @@
 #[cfg(not(test))]
 use crate::CLI_ARGS;
+use colored::{ColoredString, Colorize};
 
 #[cfg(test)]
 static CLI_ARGS: crate::Cli = crate::Cli {
@@ -39,6 +40,37 @@ impl Test {
     }
 }
 
+impl std::fmt::Display for Test {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let component =
+            |x: ColoredString| format!("{}{}{}", "[".bold().yellow(), x, "]".bold().yellow());
+        if let Some(result) = &self.result {
+            match result {
+                Ok(_) => write!(
+                    f,
+                    "{} {}: Passed",
+                    component("✓".bold().green()),
+                    self.name.to_uppercase()
+                ),
+                Err(e) => write!(
+                    f,
+                    "{} {}: Failure: {}",
+                    component("-".cyan().bold()),
+                    self.name.to_uppercase(),
+                    e
+                ),
+            }
+        } else {
+            write!(
+                f,
+                "{} {}: Skipped",
+                component("-".red().bold()),
+                self.name.to_uppercase()
+            )
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -61,5 +93,6 @@ mod test {
 
         test.execute();
         assert!(test.result.is_some());
+        println!("{}", test);
     }
 }
