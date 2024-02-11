@@ -7,6 +7,7 @@ use colored::{Color, Colorize};
 use lazy_static::lazy_static;
 
 #[cfg(test)]
+// Can be removed if the #[cfg(not(test))] is removed in main.rs
 static CLI_ARGS: crate::Cli = crate::Cli {
     mode: crate::Mode::Server,
     port: 8192,
@@ -16,6 +17,7 @@ static CLI_ARGS: crate::Cli = crate::Cli {
 };
 
 #[cfg(test)]
+// Can be removed if the #[cfg(not(test))] is removed in main.rs
 lazy_static! {
     static ref COLORS_PASS: (Color, Color) = match CLI_ARGS.colorblind {
         true => (Color::BrightBlue, Color::Blue),
@@ -33,6 +35,7 @@ pub struct Tests {
 }
 
 impl Tests {
+    /// Add a [`Test`] to the list of tests to-be-executed.
     pub fn add(
         &mut self,
         module: &str,
@@ -42,12 +45,16 @@ impl Tests {
         self.tests.push(Test::new(module, name, method))
     }
 
+    /// Executes all tests. Updates the result field for each [`Test`] in the internal vector of tests.
     pub fn execute(&mut self) {
         for test in self.tests.iter_mut() {
             test.execute()
         }
     }
 
+    /// Executes all tests and displays the test results.
+    ///
+    /// Updates the result field for each [`Test`] in the internal vector of tests.
     pub fn execute_display(&mut self) {
         println!(
             "Executing {} {}.",
@@ -89,6 +96,7 @@ impl Tests {
         }
     }
 
+    /// Shorthand for `Self::default()`; creates an empty list of [`Tests`]
     pub fn new() -> Self {
         Self::default()
     }
@@ -103,6 +111,7 @@ pub struct Test {
 }
 
 impl Test {
+    /// Create a new test case.
     pub fn new(module: &str, name: &str, method: Box<dyn Fn(u16) -> Result<(), String>>) -> Self {
         Test {
             name: name.to_string(),
@@ -137,6 +146,7 @@ impl std::fmt::Display for Test {
             };
         if let Some(result) = &self.result {
             match result {
+                // Successful test
                 Ok(_) => write!(
                     f,
                     "{}",
@@ -148,6 +158,7 @@ impl std::fmt::Display for Test {
                         COLORS_PASS.1
                     )
                 ),
+                // Failed test
                 Err(e) => write!(
                     f,
                     "{}: {}",
@@ -162,6 +173,7 @@ impl std::fmt::Display for Test {
                 ),
             }
         } else {
+            // Skipped test
             write!(
                 f,
                 "{}",
