@@ -10,6 +10,34 @@ static CLI_ARGS: crate::Cli = crate::Cli {
     waves: false,
 };
 
+pub struct Tests {
+    tests: Vec<Test>,
+}
+
+impl Tests {
+    pub fn add(
+        &mut self,
+        name: &str,
+        description: &str,
+        method: Box<dyn Fn(u16) -> Result<(), String>>,
+    ) {
+        self.tests.push(Test::new(name, description, method))
+    }
+
+    pub fn execute(&mut self) {
+        for test in self.tests.iter_mut() {
+            test.execute()
+        }
+    }
+
+    pub fn execute_display(&mut self) {
+        self.execute();
+        for test in self.tests.iter() {
+            println!("{}", test)
+        }
+    }
+}
+
 /// Represents a `stimmgabel` test acceptance case.
 pub struct Test {
     pub name: String,
@@ -32,6 +60,9 @@ impl Test {
         }
     }
 
+    /// Executes the method supplied in `self` and saves the [`Result`] inside of `self`.
+    ///
+    /// Consider using the [`Tests`] struct to execute and print a lot of tests at once.
     pub fn execute(&mut self) {
         match (self.method)(CLI_ARGS.port) {
             Ok(_) => self.result = Some(Ok(())),
