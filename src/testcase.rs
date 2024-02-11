@@ -10,20 +10,20 @@ static CLI_ARGS: crate::Cli = crate::Cli {
 };
 
 /// Represents a `stimmgabel` test acceptance case.
-pub struct TestSync {
+pub struct Test {
     pub name: String,
     pub description: String,
     pub method: Box<dyn Fn(u16) -> Result<(), String>>,
     result: Option<Result<(), String>>,
 }
 
-impl TestSync {
+impl Test {
     pub fn new(
         name: &str,
         description: &str,
         method: Box<dyn Fn(u16) -> Result<(), String>>,
     ) -> Self {
-        TestSync {
+        Test {
             name: name.to_string(),
             description: description.to_string(),
             method,
@@ -53,7 +53,7 @@ mod test {
 
     #[test]
     fn test_test_struct() {
-        let mut test = TestSync::new(
+        let mut test = Test::new(
             "My synchronous Test",
             "a synchronous test",
             Box::new(port_is_power_of_two),
