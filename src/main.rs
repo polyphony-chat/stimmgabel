@@ -1,6 +1,12 @@
 use clap::{Parser, ValueEnum};
+use lazy_static::lazy_static;
 
 mod ascii;
+pub mod testcase;
+
+lazy_static! {
+    static ref CLI_ARGS: Cli = Cli::parse();
+}
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -24,13 +30,12 @@ enum Mode {
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() {
-    let args = Cli::parse();
-    std::env::set_var("RUST_LOG", if args.verbose { "DEBUG" } else { "" });
-    if args.waves {
+    std::env::set_var("RUST_LOG", if CLI_ARGS.verbose { "DEBUG" } else { "" });
+    if CLI_ARGS.waves {
         ascii::ascii_waves()
     }
-    match args.mode {
-        Mode::Client => client::run(args.port),
-        Mode::Server => server::run(args.port).await,
+    match CLI_ARGS.mode {
+        Mode::Client => client::run(CLI_ARGS.port),
+        Mode::Server => server::run(CLI_ARGS.port).await,
     }
 }
