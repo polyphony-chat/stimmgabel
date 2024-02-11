@@ -1,4 +1,5 @@
 use clap::{Parser, ValueEnum};
+use colored::Color;
 use lazy_static::lazy_static;
 
 mod ascii;
@@ -6,6 +7,14 @@ pub mod testcase;
 
 lazy_static! {
     static ref CLI_ARGS: Cli = Cli::parse();
+    static ref COLORS_PASS: (Color, Color) = match CLI_ARGS.colorblind {
+        true => (Color::BrightBlue, Color::Blue),
+        false => (Color::BrightGreen, Color::Green),
+    };
+    static ref COLORS_FAIL: (Color, Color) = match CLI_ARGS.colorblind {
+        true => (Color::BrightYellow, Color::Yellow),
+        false => (Color::BrightRed, Color::Red),
+    };
 }
 
 #[derive(Parser)]
@@ -20,6 +29,8 @@ struct Cli {
     verbose: bool,
     #[arg(long, short)]
     waves: bool,
+    #[arg(long)]
+    colorblind: bool,
 }
 
 #[derive(Clone, Copy, ValueEnum)]

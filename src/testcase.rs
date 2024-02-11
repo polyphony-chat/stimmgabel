@@ -1,6 +1,10 @@
 #[cfg(not(test))]
 use crate::CLI_ARGS;
-use colored::{ColoredString, Colorize};
+#[cfg(not(test))]
+use crate::{COLORS_FAIL, COLORS_PASS};
+use colored::{Color, Colorize};
+#[cfg(test)]
+use lazy_static::lazy_static;
 
 #[cfg(test)]
 static CLI_ARGS: crate::Cli = crate::Cli {
@@ -8,8 +12,22 @@ static CLI_ARGS: crate::Cli = crate::Cli {
     port: 8192,
     verbose: false,
     waves: false,
+    colorblind: false,
 };
 
+#[cfg(test)]
+lazy_static! {
+    static ref COLORS_PASS: (Color, Color) = match CLI_ARGS.colorblind {
+        true => (Color::BrightBlue, Color::Blue),
+        false => (Color::BrightGreen, Color::Green),
+    };
+    static ref COLORS_FAIL: (Color, Color) = match CLI_ARGS.colorblind {
+        true => (Color::BrightYellow, Color::Yellow),
+        false => (Color::BrightRed, Color::Red),
+    };
+}
+
+#[derive(Default)]
 pub struct Tests {
     tests: Vec<Test>,
 }
@@ -17,11 +35,11 @@ pub struct Tests {
 impl Tests {
     pub fn add(
         &mut self,
+        module: &str,
         name: &str,
-        description: &str,
         method: Box<dyn Fn(u16) -> Result<(), String>>,
     ) {
-        self.tests.push(Test::new(name, description, method))
+        self.tests.push(Test::new(module, name, method))
     }
 
     pub fn execute(&mut self) {
@@ -31,30 +49,64 @@ impl Tests {
     }
 
     pub fn execute_display(&mut self) {
+        println!(
+            "Executing {} {}.",
+            self.tests.len().to_string().bold(),
+            match self.tests.len() {
+                1 => "test",
+                _ => "tests",
+            }
+        );
         self.execute();
+        let mut passed = true;
         for test in self.tests.iter() {
+            // Displaying also includes a summary of if all tests passed or not. To check if all tests
+            // passed, we iterate over them, check their result and then irrevocably set "passed" to
+            // false if any of them failed.
+            if let Some(result) = &test.result {
+                if passed {
+                    passed = result.is_ok()
+                }
+            }
             println!("{}", test)
         }
+
+        match passed {
+            true => println!(
+                "{}",
+                "\nAll tests passed.\n"
+                    .color(COLORS_PASS.1)
+                    .underline()
+                    .bold()
+            ),
+            false => println!(
+                "{}",
+                "\nNot all tests passed.\n"
+                    .color(COLORS_FAIL.1)
+                    .underline()
+                    .bold()
+            ),
+        }
+    }
+
+    pub fn new() -> Self {
+        Self::default()
     }
 }
 
 /// Represents a `stimmgabel` test acceptance case.
 pub struct Test {
+    pub module: String,
     pub name: String,
-    pub description: String,
     pub method: Box<dyn Fn(u16) -> Result<(), String>>,
     result: Option<Result<(), String>>,
 }
 
 impl Test {
-    pub fn new(
-        name: &str,
-        description: &str,
-        method: Box<dyn Fn(u16) -> Result<(), String>>,
-    ) -> Self {
+    pub fn new(module: &str, name: &str, method: Box<dyn Fn(u16) -> Result<(), String>>) -> Self {
         Test {
             name: name.to_string(),
-            description: description.to_string(),
+            module: module.to_string(),
             method,
             result: None,
         }
@@ -73,30 +125,53 @@ impl Test {
 
 impl std::fmt::Display for Test {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let component =
-            |x: ColoredString| format!("{}{}{}", "[".bold().yellow(), x, "]".bold().yellow());
+        let formatter =
+            |indication: &str, module: &str, test_name: &str, light: Color, dark: Color| {
+                format!(
+                    "{} {}{}{}",
+                    indication.white().on_color(dark).bold(),
+                    module.to_uppercase().color(light),
+                    "/".bold().color(dark),
+                    test_name.to_uppercase().color(dark)
+                )
+            };
         if let Some(result) = &self.result {
             match result {
                 Ok(_) => write!(
                     f,
-                    "{} {}: Passed",
-                    component("✓".bold().green()),
-                    self.name.to_uppercase()
+                    "{}",
+                    formatter(
+                        " PASS ",
+                        &self.module,
+                        &self.name,
+                        COLORS_PASS.0,
+                        COLORS_PASS.1
+                    )
                 ),
                 Err(e) => write!(
                     f,
-                    "{} {}: Failure: {}",
-                    component("-".cyan().bold()),
-                    self.name.to_uppercase(),
+                    "{}: {}",
+                    formatter(
+                        " FAIL ",
+                        &self.module,
+                        &self.name,
+                        COLORS_FAIL.0,
+                        COLORS_FAIL.1
+                    ),
                     e
                 ),
             }
         } else {
             write!(
                 f,
-                "{} {}: Skipped",
-                component("-".red().bold()),
-                self.name.to_uppercase()
+                "{}",
+                formatter(
+                    " SKIP ",
+                    &self.module,
+                    &self.name,
+                    Color::White,
+                    Color::BrightBlack
+                )
             )
         }
     }
@@ -114,16 +189,118 @@ mod test {
         }
     }
 
+    fn port_is_not_power_of_two(port: u16) -> Result<(), String> {
+        if port_is_power_of_two(port).is_ok() {
+            Err("The supplied port was a power of two.".to_string())
+        } else {
+            Ok(())
+        }
+    }
+
     #[test]
-    fn test_test_struct() {
-        let mut test = Test::new(
-            "My synchronous Test",
-            "a synchronous test",
-            Box::new(port_is_power_of_two),
-        );
+    fn test_struct() {
+        let mut test = Test::new("module", "test_struct_test", Box::new(port_is_power_of_two));
 
         test.execute();
         assert!(test.result.is_some());
+        println!("{}", test);
+    }
+
+    #[test]
+    fn tests_struct() {
+        let mut tests = Tests::new();
+        tests.add(
+            "module",
+            "tests_struct_test",
+            Box::new(port_is_power_of_two),
+        );
+        tests.execute_display()
+    }
+
+    #[test]
+    fn tests_struct_failure() {
+        let mut tests = Tests::new();
+        tests.add(
+            "module",
+            "tests_struct_test",
+            Box::new(port_is_not_power_of_two),
+        );
+        tests.execute_display()
+    }
+
+    #[test]
+    fn skipped_test() {
+        let test = Test::new("module", "test_struct_test", Box::new(port_is_power_of_two));
+        assert!(test.result.is_none());
+        println!("{}", test);
+    }
+
+    #[test]
+    fn all_fail_if_one_fails() {
+        let mut tests = Tests::new();
+        tests.add(
+            "module",
+            "this_one_fails",
+            Box::new(port_is_not_power_of_two),
+        );
+        tests.add(
+            "module",
+            "this_one_succeeds",
+            Box::new(port_is_power_of_two),
+        );
+        tests.execute_display()
+    }
+
+    #[ignore]
+    #[test]
+    fn many_tests() {
+        let mut tests = Tests::new();
+        tests.add(
+            "module",
+            "this_one_fails",
+            Box::new(port_is_not_power_of_two),
+        );
+        tests.add(
+            "module",
+            "this_one_succeeds",
+            Box::new(port_is_power_of_two),
+        );
+        tests.add(
+            "module",
+            "this_one_succeeds",
+            Box::new(port_is_power_of_two),
+        );
+        tests.add(
+            "module",
+            "this_one_succeeds",
+            Box::new(port_is_power_of_two),
+        );
+        tests.add(
+            "module",
+            "this_one_fails",
+            Box::new(port_is_not_power_of_two),
+        );
+        tests.add(
+            "module",
+            "this_one_succeeds",
+            Box::new(port_is_power_of_two),
+        );
+        tests.add(
+            "module",
+            "this_one_fails",
+            Box::new(port_is_not_power_of_two),
+        );
+        tests.add(
+            "module",
+            "this_one_fails",
+            Box::new(port_is_not_power_of_two),
+        );
+        let test = Test::new("module", "test_struct_test", Box::new(port_is_power_of_two));
+        assert!(test.result.is_none());
+        println!("{}", test);
+        tests.execute_display();
+        let test = Test::new("module", "test_struct_test", Box::new(port_is_power_of_two));
+        assert!(test.result.is_none());
         println!("{}", test);
     }
 }
