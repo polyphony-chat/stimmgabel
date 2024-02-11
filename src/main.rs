@@ -29,6 +29,7 @@ struct Cli {
     verbose: bool,
     #[arg(long, short)]
     waves: bool,
+    /// Changes the set of "fail/pass" colors to more colorblind-friendly ones.
     #[arg(long)]
     colorblind: bool,
 }
