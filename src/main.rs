@@ -19,7 +19,7 @@ lazy_static! {
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
-struct Cli {
+pub struct Cli {
     #[arg(long, short)]
     mode: Mode,
     /// Port for the server to listen on, or for the client to connect to.
