@@ -48,7 +48,7 @@ enum Mode {
     Server,
 }
 
-#[tokio::main(flavor = "current_thread")]
+#[tokio::main]
 async fn main() {
     std::env::set_var("RUST_LOG", if CLI_ARGS.verbose { "DEBUG" } else { "" });
     if CLI_ARGS.waves {
