@@ -3,7 +3,9 @@ use colored::Color;
 use lazy_static::lazy_static;
 
 mod ascii;
-pub mod testcase;
+pub(crate) mod client;
+pub(crate) mod server;
+pub(crate) mod testcase;
 
 lazy_static! {
     static ref CLI_ARGS: Cli = Cli::parse();

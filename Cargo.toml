@@ -8,13 +8,15 @@ repository = "https://github.com/polyphony-chat/stimmgabel"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[workspace]
-members = ["client", "server"]
-
 [dependencies]
-server = { path = "./server" }
-client = { path = "./client" }
 clap = { version = "4.5.0", features = ["derive"] }
 tokio = { version = "1.36.0", features = ["rt", "macros", "net"] }
 colored = "2.1.0"
 lazy_static = "1.4.0"
+axum = { version = "0.7.4", optional = true }
+reqwest = { version = "0.11.24", optional = true }
+
+[features]
+default = ["client", "server"]
+client = ["dep:reqwest"]
+server = ["dep:axum"]
