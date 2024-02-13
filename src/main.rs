@@ -40,6 +40,9 @@ pub struct Cli {
     /// Changes the set of "fail/pass" colors to more colorblind-friendly ones.
     #[arg(long, default_value_t = std::env::var("COLORBLIND").is_ok())]
     colorblind: bool,
+    /// The URL the client should connect to.
+    #[arg(short, long, default_value_t = String::from("http://localhost"))]
+    url: String,
 }
 
 #[derive(Clone, Copy, ValueEnum)]

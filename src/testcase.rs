@@ -27,6 +27,7 @@ lazy_static! {
         verbose: false,
         waves: false,
         colorblind: std::env::var("COLORBLIND").is_ok(),
+        url: "http://localhost".to_string()
     };
 }
 
