@@ -24,3 +24,4 @@ ed25519-dalek = "2.1.1"
 default = ["client", "server"]
 client = ["dep:reqwest", "dep:rand"]
 server = ["dep:axum"]
+# TODO: Feature-lock different signing algorithms
