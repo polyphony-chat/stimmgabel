@@ -3,10 +3,10 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 use asn1_rs::{oid, Any, Oid};
+use ed25519_dalek::Signature as SignatureDalek;
 use ed25519_dalek::{Signer, SigningKey, VerifyingKey};
 use polyproto::{PrivateKey, PublicKey, Signature, SignatureAlgorithm};
 use rand::prelude::{CryptoRng, RngCore};
-use rand::rngs::OsRng;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Ed25519 {
@@ -17,7 +17,7 @@ pub struct Ed25519 {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Ed25519Signature {
     algorithm: Ed25519,
-    signature: Vec<u8>,
+    signature: SignatureDalek,
 }
 
 #[derive(Clone, Debug)]
@@ -28,7 +28,7 @@ pub struct Ed25519PrivateKey {
 
 #[derive(Clone, Debug)]
 pub struct Ed25519PublicKey {
-    key: Vec<u8>,
+    key: VerifyingKey,
 }
 
 impl SignatureAlgorithm for Ed25519 {
@@ -46,7 +46,8 @@ impl SignatureAlgorithm for Ed25519 {
 }
 
 impl Signature<Ed25519> for Ed25519Signature {
-    fn signature(&self) -> &[u8] {
+    type Signature = SignatureDalek;
+    fn signature(&self) -> &SignatureDalek {
         &self.signature
     }
 
@@ -61,17 +62,16 @@ impl PrivateKey<Ed25519> for Ed25519PrivateKey {
     type Signature = Ed25519Signature;
 
     fn pubkey(&self) -> Ed25519PublicKey {
-        todo!()
+        self.pub_key.clone()
     }
 
     fn sign(&self, data: &[u8]) -> Ed25519Signature {
-        let interim_signature = self.key().sign(data);
         Ed25519Signature {
             algorithm: Ed25519 {
                 oid: oid!(1.3.101 .112),
                 parameters: None,
             },
-            signature: interim_signature.to_vec(),
+            signature: self.key.sign(data),
         }
     }
 
@@ -89,11 +89,13 @@ impl PublicKey<Ed25519> for Ed25519PublicKey {
     type Signature = Ed25519Signature;
 
     fn verify_signature(&self, signature: Ed25519Signature, data: &[u8]) -> bool {
-        todo!()
+        self.key()
+            .verify_strict(data, signature.signature())
+            .is_ok()
     }
 
-    fn key(&self) -> &Self::PublicKey {
-        todo!()
+    fn key(&self) -> &VerifyingKey {
+        &self.key
     }
 
     fn key_mut(&mut self) -> &mut Self::PublicKey {
@@ -109,7 +111,7 @@ impl Ed25519PrivateKey {
         let signing_key: SigningKey = SigningKey::generate(csprng);
         Ed25519PrivateKey {
             pub_key: Ed25519PublicKey {
-                key: signing_key.verifying_key().to_bytes().to_vec(),
+                key: signing_key.verifying_key(),
             },
             key: signing_key,
         }
@@ -118,10 +120,10 @@ impl Ed25519PrivateKey {
 
 #[test]
 fn test() {
-    let mut csprng = OsRng;
+    let mut csprng = rand::rngs::OsRng;
     let priv_key = Ed25519PrivateKey::gen_keypair(&mut csprng);
     println!("Private Key is: {:?}", priv_key.key.to_bytes());
-    println!("Public Key is: {:?}", priv_key.pub_key.key);
+    println!("Public Key is: {:?}", priv_key.pub_key.key.to_bytes());
     println!();
 
     let message_unsigned = "hi my name is flori".as_bytes();
@@ -129,6 +131,21 @@ fn test() {
     println!(
         "Signature of the message \"{}\": {:?}",
         String::from_utf8_lossy(message_unsigned),
-        signature.signature()
+        signature.signature().to_bytes()
+    );
+
+    println!(
+        "Is the signature valid? {}",
+        priv_key
+            .pubkey()
+            .verify_signature(signature.clone(), message_unsigned)
+    );
+
+    println!(
+        "Trying again with different data. The result is: {}",
+        priv_key.pubkey().verify_signature(
+            signature,
+            format!("{} ", String::from_utf8_lossy(message_unsigned)).as_bytes()
+        )
     )
 }
