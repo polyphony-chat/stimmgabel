@@ -8,10 +8,11 @@ use lazy_static::lazy_static;
 
 mod ascii;
 #[cfg(feature = "client")]
-pub mod client;
+mod client;
+mod cryptography;
 #[cfg(feature = "server")]
-pub mod server;
-pub mod testcase;
+mod server;
+mod testcase;
 
 lazy_static! {
     static ref CLI_ARGS: Cli = Cli::parse();
