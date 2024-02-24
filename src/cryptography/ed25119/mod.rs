@@ -3,7 +3,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 use der::asn1::BitString;
-use ed25519_dalek::{Signature as Ed25519DalekSignature, SigningKey, VerifyingKey};
+use ed25519_dalek::{Signature as Ed25519DalekSignature, Signer, SigningKey, VerifyingKey};
 use polyproto::key::{PrivateKey, PublicKey};
 use polyproto::signature::Signature;
 use spki::{AlgorithmIdentifierOwned, ObjectIdentifier, SignatureBitStringEncoding};
@@ -46,11 +46,15 @@ impl PrivateKey<Ed25519Signature> for Ed25519PrivateKey {
     type PublicKey = Ed25519PublicKey;
 
     fn pubkey(&self) -> &Self::PublicKey {
-        todo!()
+        &self.public_key
     }
 
     fn sign(&self, data: &[u8]) -> Ed25519Signature {
-        todo!()
+        let signature = self.key.sign(data);
+        Ed25519Signature {
+            signature,
+            algorithm: Ed25519Signature::as_algorithm_identifier(),
+        }
     }
 
     fn to_bitstring(&self) -> Result<BitString, der::Error> {
@@ -71,7 +75,10 @@ impl PublicKey<Ed25519Signature> for Ed25519PublicKey {
         signature: &Ed25519Signature,
         data: &[u8],
     ) -> Result<(), Self::Error> {
-        todo!()
+        match self.key.verify_strict(data, signature.as_signature()) {
+            Ok(_) => Ok(()),
+            Err(_) => Err(Error::SignatureVerification),
+        }
     }
 
     fn to_bitstring(&self) -> Result<BitString, der::Error> {
@@ -80,7 +87,10 @@ impl PublicKey<Ed25519Signature> for Ed25519PublicKey {
 }
 
 #[derive(Error, Debug, Clone)]
-pub enum Error {}
+pub enum Error {
+    #[error("The signature failed to verify")]
+    SignatureVerification,
+}
 
 #[test]
 fn test() {
