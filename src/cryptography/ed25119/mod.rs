@@ -2,121 +2,85 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-use asn1_rs::{oid, Any, Oid};
-use ed25519_dalek::Signature as SignatureDalek;
-use ed25519_dalek::{Signer, SigningKey, VerifyingKey};
-use polyproto::{PrivateKey, PublicKey, Signature, SignatureAlgorithm};
-use rand::prelude::{CryptoRng, RngCore};
+use der::asn1::BitString;
+use ed25519_dalek::{Signature as Ed25519DalekSignature, SigningKey, VerifyingKey};
+use polyproto::key::{PrivateKey, PublicKey};
+use polyproto::signature::Signature;
+use spki::{AlgorithmIdentifierOwned, ObjectIdentifier, SignatureBitStringEncoding};
+use thiserror::Error;
 
-#[derive(Clone, Debug, PartialEq)]
-pub struct Ed25519 {
-    oid: Oid<'static>,
-    parameters: Option<Any<'static>>,
-}
-
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Ed25519Signature {
-    algorithm: Ed25519,
-    signature: SignatureDalek,
+    signature: Ed25519DalekSignature,
+    algorithm: AlgorithmIdentifierOwned,
 }
 
-#[derive(Clone, Debug)]
+impl Signature for Ed25519Signature {
+    type Signature = Ed25519DalekSignature;
+
+    fn as_signature(&self) -> &Self::Signature {
+        &self.signature
+    }
+
+    fn as_algorithm_identifier() -> AlgorithmIdentifierOwned {
+        AlgorithmIdentifierOwned {
+            oid: ObjectIdentifier::new_unwrap("1.3.101.112"),
+            parameters: None,
+        }
+    }
+}
+
+impl SignatureBitStringEncoding for Ed25519Signature {
+    fn to_bitstring(&self) -> der::Result<der::asn1::BitString> {
+        BitString::from_bytes(&self.as_signature().to_bytes())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Ed25519PrivateKey {
-    pub_key: Ed25519PublicKey,
+    public_key: Ed25519PublicKey,
     key: SigningKey,
 }
 
-#[derive(Clone, Debug)]
+impl PrivateKey<Ed25519Signature> for Ed25519PrivateKey {
+    type PublicKey = Ed25519PublicKey;
+
+    fn pubkey(&self) -> &Self::PublicKey {
+        todo!()
+    }
+
+    fn sign(&self, data: &[u8]) -> Ed25519Signature {
+        todo!()
+    }
+
+    fn to_bitstring(&self) -> Result<BitString, der::Error> {
+        BitString::from_bytes(self.key.as_bytes())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Ed25519PublicKey {
     key: VerifyingKey,
 }
 
-impl SignatureAlgorithm for Ed25519 {
-    fn oid(&self) -> Oid {
-        self.oid.clone()
-    }
+impl PublicKey<Ed25519Signature> for Ed25519PublicKey {
+    type Error = Error;
 
-    fn parameters(&self) -> Option<Any<'_>> {
-        self.parameters.clone()
-    }
-
-    fn name(&self) -> &str {
-        "Ed25519"
-    }
-}
-
-impl Signature<Ed25519> for Ed25519Signature {
-    type Signature = SignatureDalek;
-    fn signature(&self) -> &SignatureDalek {
-        &self.signature
-    }
-
-    fn algorithm(&self) -> Ed25519 {
-        self.algorithm.clone()
-    }
-}
-
-impl PrivateKey<Ed25519> for Ed25519PrivateKey {
-    type PrivateKey = SigningKey;
-    type PublicKey = Ed25519PublicKey;
-    type Signature = Ed25519Signature;
-
-    fn pubkey(&self) -> Ed25519PublicKey {
-        self.pub_key.clone()
-    }
-
-    fn sign(&self, data: &[u8]) -> Ed25519Signature {
-        Ed25519Signature {
-            algorithm: Ed25519 {
-                oid: oid!(1.3.101 .112),
-                parameters: None,
-            },
-            signature: self.key.sign(data),
-        }
-    }
-
-    fn key(&self) -> &Self::PrivateKey {
-        &self.key
-    }
-
-    fn key_mut(&mut self) -> &mut Self::PrivateKey {
+    fn verify_signature(
+        &self,
+        signature: &Ed25519Signature,
+        data: &[u8],
+    ) -> Result<(), Self::Error> {
         todo!()
     }
-}
 
-impl PublicKey<Ed25519> for Ed25519PublicKey {
-    type PublicKey = VerifyingKey;
-    type Signature = Ed25519Signature;
-
-    fn verify_signature(&self, signature: Ed25519Signature, data: &[u8]) -> bool {
-        self.key()
-            .verify_strict(data, signature.signature())
-            .is_ok()
-    }
-
-    fn key(&self) -> &VerifyingKey {
-        &self.key
-    }
-
-    fn key_mut(&mut self) -> &mut Self::PublicKey {
-        todo!()
+    fn to_bitstring(&self) -> Result<BitString, der::Error> {
+        BitString::from_bytes(self.key.as_bytes())
     }
 }
 
-impl Ed25519PrivateKey {
-    pub fn gen_keypair<R>(csprng: &mut R) -> Ed25519PrivateKey
-    where
-        R: CryptoRng + RngCore,
-    {
-        let signing_key: SigningKey = SigningKey::generate(csprng);
-        Ed25519PrivateKey {
-            pub_key: Ed25519PublicKey {
-                key: signing_key.verifying_key(),
-            },
-            key: signing_key,
-        }
-    }
-}
+#[derive(Error, Debug, Clone)]
+pub enum Error {}
 
 #[test]
 fn test() {

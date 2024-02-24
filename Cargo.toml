@@ -16,9 +16,11 @@ lazy_static = "1.4.0"
 axum = { version = "0.7.4", optional = true }
 reqwest = { version = "0.11.24", optional = true }
 rand = { version = "0.8.5", optional = true }
-polyproto = { git = "https://github.com/bitfl0wer/polyproto.git" }
-asn1-rs = "0.5.2"
+polyproto = { git = "https://github.com/polyphony-chat/polyproto.git" }
 ed25519-dalek = { version = "2.1.1", features = ["rand_core"] }
+der = "0.7.8"
+spki = "0.7.3"
+thiserror = "1.0.57"
 
 [features]
 default = ["client", "server"]
