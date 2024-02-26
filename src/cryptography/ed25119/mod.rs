@@ -6,6 +6,7 @@ use der::asn1::BitString;
 use ed25519_dalek::{Signature as Ed25519DalekSignature, Signer, SigningKey, VerifyingKey};
 use polyproto::key::{PrivateKey, PublicKey};
 use polyproto::signature::Signature;
+use rand::rngs::OsRng;
 use spki::{AlgorithmIdentifierOwned, ObjectIdentifier, SignatureBitStringEncoding};
 use thiserror::Error;
 
@@ -62,6 +63,16 @@ impl PrivateKey<Ed25519Signature> for Ed25519PrivateKey {
     }
 }
 
+impl Ed25519PrivateKey {
+    pub fn gen_keypair(csprng: &mut OsRng) -> Self {
+        let key = SigningKey::generate(csprng);
+        let public_key = Ed25519PublicKey {
+            key: key.verifying_key(),
+        };
+        Self { public_key, key }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Ed25519PublicKey {
     key: VerifyingKey,
@@ -97,7 +108,7 @@ fn test() {
     let mut csprng = rand::rngs::OsRng;
     let priv_key = Ed25519PrivateKey::gen_keypair(&mut csprng);
     println!("Private Key is: {:?}", priv_key.key.to_bytes());
-    println!("Public Key is: {:?}", priv_key.pub_key.key.to_bytes());
+    println!("Public Key is: {:?}", priv_key.public_key.key.to_bytes());
     println!();
 
     let message_unsigned = "hi my name is flori".as_bytes();
@@ -105,21 +116,25 @@ fn test() {
     println!(
         "Signature of the message \"{}\": {:?}",
         String::from_utf8_lossy(message_unsigned),
-        signature.signature().to_bytes()
+        signature.as_signature().to_bytes()
     );
 
     println!(
         "Is the signature valid? {}",
         priv_key
-            .pubkey()
-            .verify_signature(signature.clone(), message_unsigned)
+            .public_key
+            .verify_signature(&signature, message_unsigned)
+            .is_ok()
     );
 
     println!(
         "Trying again with different data. The result is: {}",
-        priv_key.pubkey().verify_signature(
-            signature,
-            format!("{} ", String::from_utf8_lossy(message_unsigned)).as_bytes()
-        )
+        priv_key
+            .pubkey()
+            .verify_signature(
+                &signature,
+                format!("{} ", String::from_utf8_lossy(message_unsigned)).as_bytes()
+            )
+            .is_ok()
     )
 }
