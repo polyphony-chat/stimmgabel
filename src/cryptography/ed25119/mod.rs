@@ -23,11 +23,8 @@ impl Signature for Ed25519Signature {
         &self.signature
     }
 
-    fn as_algorithm_identifier() -> AlgorithmIdentifierOwned {
-        AlgorithmIdentifierOwned {
-            oid: ObjectIdentifier::new_unwrap("1.3.101.112"),
-            parameters: None,
-        }
+    fn public_key_info() -> polyproto::certs::PublicKeyInfo {
+        todo!()
     }
 }
 
@@ -54,12 +51,12 @@ impl PrivateKey<Ed25519Signature> for Ed25519PrivateKey {
         let signature = self.key.sign(data);
         Ed25519Signature {
             signature,
-            algorithm: Ed25519Signature::as_algorithm_identifier(),
+            algorithm: Ed25519Signature::public_key_info().algorithm,
         }
     }
 
-    fn to_bitstring(&self) -> Result<BitString, der::Error> {
-        BitString::from_bytes(self.key.as_bytes())
+    fn public_key_info(&self) -> polyproto::certs::PublicKeyInfo {
+        <Ed25519Signature>::public_key_info()
     }
 }
 
