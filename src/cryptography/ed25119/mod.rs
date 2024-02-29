@@ -103,38 +103,46 @@ pub enum Error {
     SignatureVerification,
 }
 
-#[test]
-fn test() {
-    let mut csprng = rand::rngs::OsRng;
-    let priv_key = Ed25519PrivateKey::gen_keypair(&mut csprng);
-    println!("Private Key is: {:?}", priv_key.key.to_bytes());
-    println!("Public Key is: {:?}", priv_key.public_key.key.to_bytes());
-    println!();
+#[cfg(test)]
+mod test {
+    use polyproto::key::{PrivateKey, PublicKey};
+    use polyproto::signature::Signature;
 
-    let message_unsigned = "hi my name is flori".as_bytes();
-    let signature = priv_key.sign(message_unsigned);
-    println!(
-        "Signature of the message \"{}\": {:?}",
-        String::from_utf8_lossy(message_unsigned),
-        signature.as_signature().to_bytes()
-    );
+    use crate::cryptography::ed25119::Ed25519PrivateKey;
 
-    println!(
-        "Is the signature valid? {}",
-        priv_key
-            .public_key
-            .verify_signature(&signature, message_unsigned)
-            .is_ok()
-    );
+    #[test]
+    fn test() {
+        let mut csprng = rand::rngs::OsRng;
+        let priv_key = Ed25519PrivateKey::gen_keypair(&mut csprng);
+        println!("Private Key is: {:?}", priv_key.key.to_bytes());
+        println!("Public Key is: {:?}", priv_key.public_key.key.to_bytes());
+        println!();
 
-    println!(
-        "Trying again with different data. The result is: {}",
-        priv_key
-            .pubkey()
-            .verify_signature(
-                &signature,
-                format!("{} ", String::from_utf8_lossy(message_unsigned)).as_bytes()
-            )
-            .is_ok()
-    )
+        let message_unsigned = "hi my name is flori".as_bytes();
+        let signature = priv_key.sign(message_unsigned);
+        println!(
+            "Signature of the message \"{}\": {:?}",
+            String::from_utf8_lossy(message_unsigned),
+            signature.as_signature().to_bytes()
+        );
+
+        println!(
+            "Is the signature valid? {}",
+            priv_key
+                .public_key
+                .verify_signature(&signature, message_unsigned)
+                .is_ok()
+        );
+
+        println!(
+            "Trying again with different data. The result is: {}",
+            priv_key
+                .pubkey()
+                .verify_signature(
+                    &signature,
+                    format!("{} ", String::from_utf8_lossy(message_unsigned)).as_bytes()
+                )
+                .is_ok()
+        )
+    }
 }
