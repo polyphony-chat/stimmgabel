@@ -2,8 +2,11 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+use std::str::FromStr;
+
 use der::asn1::BitString;
 use ed25519_dalek::{Signature as Ed25519DalekSignature, Signer, SigningKey, VerifyingKey};
+use polyproto::certs::PublicKeyInfo;
 use polyproto::key::{PrivateKey, PublicKey};
 use polyproto::signature::Signature;
 use rand::rngs::OsRng;
@@ -23,8 +26,11 @@ impl Signature for Ed25519Signature {
         &self.signature
     }
 
-    fn public_key_info() -> polyproto::certs::PublicKeyInfo {
-        todo!()
+    fn algorithm_identifier() -> AlgorithmIdentifierOwned {
+        AlgorithmIdentifierOwned {
+            oid: ObjectIdentifier::from_str("1.3.101.112").unwrap(),
+            parameters: None,
+        }
     }
 }
 
@@ -51,12 +57,15 @@ impl PrivateKey<Ed25519Signature> for Ed25519PrivateKey {
         let signature = self.key.sign(data);
         Ed25519Signature {
             signature,
-            algorithm: Ed25519Signature::public_key_info().algorithm,
+            algorithm: Ed25519Signature::algorithm_identifier(),
         }
     }
 
     fn public_key_info(&self) -> polyproto::certs::PublicKeyInfo {
-        <Ed25519Signature>::public_key_info()
+        PublicKeyInfo {
+            algorithm: Ed25519Signature::algorithm_identifier(),
+            public_key_bitstring: BitString::from_bytes(&self.public_key.key.to_bytes()).unwrap(),
+        }
     }
 }
 
@@ -89,8 +98,11 @@ impl PublicKey<Ed25519Signature> for Ed25519PublicKey {
         }
     }
 
-    fn to_bitstring(&self) -> Result<BitString, der::Error> {
-        BitString::from_bytes(self.key.as_bytes())
+    fn public_key_info(&self) -> PublicKeyInfo {
+        PublicKeyInfo {
+            algorithm: Ed25519Signature::algorithm_identifier(),
+            public_key_bitstring: BitString::from_bytes(&self.key.to_bytes()).unwrap(),
+        }
     }
 }
 
