@@ -2,7 +2,6 @@
 name = "stimmgabel"
 version = "0.1.0"
 edition = "2021"
-description = "polyproto reference server and client implementation used for verifying other implementations of the protocol."
 license = "MPL-2.0"
 repository = "https://github.com/polyphony-chat/stimmgabel"
 
@@ -13,17 +12,9 @@ clap = { version = "4.5.0", features = ["derive"] }
 tokio = { version = "1.36.0", features = ["rt-multi-thread", "macros", "net"] }
 colored = "2.1.0"
 lazy_static = "1.4.0"
-axum = { version = "0.7.4", optional = true }
-reqwest = { version = "0.11.24", optional = true }
-rand = { version = "0.8.5", optional = true }
-polyproto = { git = "https://github.com/polyphony-chat/polyproto.git" }
+rand = "0.8.5"
+polyproto = "0.9.0-alpha.1"
 ed25519-dalek = { version = "2.1.1", features = ["rand_core"] }
 der = "0.7.8"
 spki = "0.7.3"
 thiserror = "1.0.57"
-
-[features]
-default = ["client", "server"]
-client = ["dep:reqwest", "dep:rand"]
-server = ["dep:axum"]
-# TODO: Feature-lock different signing algorithms
