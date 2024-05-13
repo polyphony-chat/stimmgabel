@@ -1,0 +1,2 @@
+{"rule":"UPPERCASE_SENTENCE_START","sentence":"^\\Qstimmgabel\\E$"}
+{"rule":"UPPERCASE_SENTENCE_START","sentence":"^\\Qpolyproto reference test implementation used for verifying other implementations of the protocol.\\E$"}
