@@ -9,23 +9,20 @@ use std::fmt::Display;
 use clap::{Parser, Subcommand, ValueEnum};
 
 #[derive(Debug, Clone, PartialEq, Eq, Parser)]
+#[command(name = "Stimmgabel")]
+#[command(
+    about = "A  polyproto reference test implementation useful for verifying other implementations of the protocol."
+)]
 pub(crate) struct CliArguments {
     #[command(subcommand)]
-    command: Option<Commands>,
+    pub(crate) command: Commands,
 }
 
 #[derive(Subcommand, Debug, Clone, PartialEq, Eq)]
 pub(crate) enum Commands {
-    /// Display the Ed25519 keys that should be used when supplying data to be verified
-    Key {
-        /// Print the private key actors should use to generate data to be verified using stimmgabel
-        #[arg(long = "actor")]
-        actor_private_key: bool,
-        /// Print the public key of the stimmgabel "virtual home server" that should be used to
-        /// generate data to be verified using stimmgabel
-        #[arg(long = "homeserver")]
-        home_server_public_key: bool,
-    },
+    /// Display the Ed25519 keys that should be used when supplying data to be verified. Keys are
+    /// printed in PEM format
+    Keys { key_choice: KeyChoice },
     /// Verify the well-formedness as well as the syntactical and cryptographical correctness of a
     /// given polyproto value
     Verify {
@@ -37,6 +34,39 @@ pub(crate) enum Commands {
         #[arg(default_value_t = Format::Der, long = "format")]
         format: Format,
     },
+}
+
+/// The different keys that can be printed
+#[derive(Debug, Clone, PartialEq, Eq, Copy)]
+pub(crate) enum KeyChoice {
+    ActorPrivate,
+    ActorPublic,
+    HomeserverPrivate,
+    HomeserverPublic,
+}
+
+impl ValueEnum for KeyChoice {
+    fn value_variants<'a>() -> &'a [Self] {
+        &[
+            KeyChoice::ActorPrivate,
+            KeyChoice::ActorPublic,
+            KeyChoice::HomeserverPrivate,
+            KeyChoice::HomeserverPublic,
+        ]
+    }
+
+    fn to_possible_value(&self) -> Option<clap::builder::PossibleValue> {
+        match self {
+            KeyChoice::ActorPrivate => Some(clap::builder::PossibleValue::new("actor-private")),
+            KeyChoice::ActorPublic => Some(clap::builder::PossibleValue::new("actor-public")),
+            KeyChoice::HomeserverPrivate => {
+                Some(clap::builder::PossibleValue::new("homeserver-private"))
+            }
+            KeyChoice::HomeserverPublic => {
+                Some(clap::builder::PossibleValue::new("homeserver-public"))
+            }
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
