@@ -22,13 +22,14 @@ use cli::{CliArguments, Commands};
 
 pub(crate) mod cli;
 pub(crate) mod commands;
+pub(crate) mod errors;
 pub(crate) mod polyproto;
 
 fn main() {
     // Parse arguments, then choose the correct command to run
     let args = CliArguments::parse();
     match args.command {
-        Commands::Key { key_choice } => {
+        Commands::Keys { key_choice } => {
             commands::keys::print_key(&key_choice);
             std::process::exit(0);
         }
