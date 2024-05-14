@@ -7,7 +7,7 @@ use std::fmt::Display;
 use clap::builder::PossibleValue;
 use clap::{Parser, Subcommand, ValueEnum};
 
-#[derive(Debug, Clone, PartialEq, Eq, Parser)]
+#[derive(Debug, Parser)]
 #[command(name = "stimmgabel")]
 #[command(
     about = "A polyproto reference test implementation useful for verifying other implementations of the protocol."
@@ -17,7 +17,7 @@ pub(crate) struct CliArguments {
     pub(crate) command: Commands,
 }
 
-#[derive(Subcommand, Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Subcommand)]
 pub(crate) enum Commands {
     /// Display the Ed25519 keys that should be used when supplying data to be verified. Keys are
     /// printed in PEM format
@@ -25,16 +25,56 @@ pub(crate) enum Commands {
     /// Verify the well-formedness as well as the syntactical and cryptographical correctness of a
     /// given polyproto value
     Verify {
-        /// Which verification mode to use
+        /// The verification mode to use
+        #[command(subcommand)]
         mode: StimmgabelMode,
-        /// The value to verify
-        value: String,
-        /// The format, in which the value is encoded
-        #[arg(default_value_t = Format::Der, long = "format")]
-        format: Format,
     },
 }
 
+#[derive(Debug, Subcommand, PartialEq, Eq, Clone)]
+pub(crate) enum StimmgabelMode {
+    /// Verify a polyproto ID-Cert for its well-formedness and syntactical and cryptographical correctness
+    IdCert {
+        /// The value to verify
+        value: String,
+        #[arg(default_value_t = Format::Der, long = "format")]
+        /// The format, in which the value is encoded
+        encoding: Format,
+        /// Who this certificate is supposed to be for
+        target: Target,
+    },
+    /// Verify a message for its cryptographical correctness
+    // TODO: What will this look like exactly?
+    Message { value: String },
+    /// Verify a polyproto Id-CSR for its well-formedness and syntactical and cryptographical correctness
+    IdCsr {
+        /// The value to verify
+        value: String,
+        #[arg(default_value_t = Format::Der, long = "format")]
+        /// The format, in which the value is encoded
+        encoding: Format,
+        /// Who this CSR is supposed to be for
+        target: Target,
+    },
+    /// Verify a polyproto identity descriptor (IDD) for its well-formedness and syntactical correctness
+    Idd {
+        /// The value to verify
+        value: String,
+        #[arg(default_value_t = Format::Der, long = "format")]
+        /// The format, in which the value is encoded
+        encoding: Format,
+        /// Who this IDD is supposed to be for
+        target: Target,
+    },
+    /// Verify a relative polyproto identity descriptor name (RIDD) for its well-formedness and syntactical correctness
+    RIdd {
+        /// The value to verify
+        value: String,
+        #[arg(default_value_t = Format::Der, long = "format")]
+        /// The format, in which the value is encoded
+        encoding: Format,
+    },
+}
 /// The different keys that can be printed
 #[derive(Debug, Clone, PartialEq, Eq, Copy)]
 pub(crate) enum KeyChoice {
@@ -93,46 +133,29 @@ impl Display for Format {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum StimmgabelMode {
-    ActorCertificate,
-    HomeserverCertificate,
-    Message,
-    ActorCsr,
-    HomeserverCsr,
-    ActorDn,
-    HomeserverDn,
-    ActorRdn,
-    HomeserverRdn,
+pub(crate) enum Target {
+    Actor,
+    Homeserver,
 }
 
-impl ValueEnum for StimmgabelMode {
+impl ValueEnum for Target {
     fn value_variants<'a>() -> &'a [Self] {
-        &[
-            StimmgabelMode::ActorCertificate,
-            StimmgabelMode::HomeserverCertificate,
-            StimmgabelMode::Message,
-            StimmgabelMode::ActorCsr,
-            StimmgabelMode::HomeserverCsr,
-            StimmgabelMode::ActorDn,
-            StimmgabelMode::HomeserverDn,
-            StimmgabelMode::ActorRdn,
-            StimmgabelMode::HomeserverRdn,
-        ]
+        &[Target::Actor, Target::Homeserver]
     }
 
     fn to_possible_value(&self) -> Option<PossibleValue> {
         match self {
-            StimmgabelMode::ActorCertificate => Some(PossibleValue::new("certificate-actor")),
-            StimmgabelMode::HomeserverCertificate => {
-                Some(PossibleValue::new("certificate-homeserver"))
-            }
-            StimmgabelMode::Message => Some(PossibleValue::new("message")),
-            StimmgabelMode::ActorCsr => Some(PossibleValue::new("csr-actor")),
-            StimmgabelMode::HomeserverCsr => Some(PossibleValue::new("csr-homeserver")),
-            StimmgabelMode::ActorDn => Some(PossibleValue::new("dn-actor")),
-            StimmgabelMode::HomeserverDn => Some(PossibleValue::new("dn-homeserver")),
-            StimmgabelMode::ActorRdn => Some(PossibleValue::new("rdn-actor")),
-            StimmgabelMode::HomeserverRdn => Some(PossibleValue::new("rdn-homeserver")),
+            Target::Actor => Some(PossibleValue::new("actor")),
+            Target::Homeserver => Some(PossibleValue::new("homeserver")),
+        }
+    }
+}
+
+impl Display for Target {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Target::Actor => write!(f, "actor"),
+            Target::Homeserver => write!(f, "homeserver"),
         }
     }
 }

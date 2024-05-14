@@ -31,10 +31,6 @@ fn main() {
             commands::keys::print_key(&key_choice);
             std::process::exit(0);
         }
-        Commands::Verify {
-            mode,
-            value,
-            format,
-        } => std::process::exit(commands::verify::verify_input(mode, &value, format)),
+        Commands::Verify { mode } => std::process::exit(commands::verify::verify_input(mode)),
     }
 }
