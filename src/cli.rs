@@ -11,7 +11,7 @@ use clap::{Parser, Subcommand, ValueEnum};
 #[derive(Debug, Clone, PartialEq, Eq, Parser)]
 #[command(name = "Stimmgabel")]
 #[command(
-    about = "A  polyproto reference test implementation useful for verifying other implementations of the protocol."
+    about = "A polyproto reference test implementation useful for verifying other implementations of the protocol."
 )]
 pub(crate) struct CliArguments {
     #[command(subcommand)]
