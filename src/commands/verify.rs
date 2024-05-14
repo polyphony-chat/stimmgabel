@@ -35,10 +35,7 @@ pub(crate) fn verify_input(mode: StimmgabelMode) -> i32 {
 /// certificate value. This function returns an exit code that can be used to signal the result of the
 /// verification.
 fn verify_certificate(value: &str, encoding: Format, target: Target) -> i32 {
-    match encoding {
-        Format::Der => todo!(),
-        Format::Pem => todo!(),
-    }
+    todo!()
 }
 
 /// Verify the cryptographical correctness of a given
