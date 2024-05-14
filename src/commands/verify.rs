@@ -13,9 +13,9 @@ pub(crate) fn verify_input(mode: StimmgabelMode) -> i32 {
     match mode {
         StimmgabelMode::IdCert {
             value,
-            encoding: format,
+            encoding,
             target,
-        } => verify_certificate(&value, format, target),
+        } => verify_certificate(&value, encoding, target),
         StimmgabelMode::Message { value } => verify_message(&value),
         StimmgabelMode::IdCsr {
             value,

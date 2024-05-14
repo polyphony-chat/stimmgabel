@@ -37,7 +37,7 @@ pub(crate) enum StimmgabelMode {
     IdCert {
         /// The value to verify
         value: String,
-        #[arg(default_value_t = Format::Der, long = "format")]
+        #[arg(default_value_t = Format::Der, long = "encoding")]
         /// The format, in which the value is encoded
         encoding: Format,
         /// Who this certificate is supposed to be for
@@ -50,7 +50,7 @@ pub(crate) enum StimmgabelMode {
     IdCsr {
         /// The value to verify
         value: String,
-        #[arg(default_value_t = Format::Der, long = "format")]
+        #[arg(default_value_t = Format::Der, long = "encoding")]
         /// The format, in which the value is encoded
         encoding: Format,
         /// Who this CSR is supposed to be for
@@ -60,7 +60,7 @@ pub(crate) enum StimmgabelMode {
     Idd {
         /// The value to verify
         value: String,
-        #[arg(default_value_t = Format::Der, long = "format")]
+        #[arg(default_value_t = Format::Der, long = "encoding")]
         /// The format, in which the value is encoded
         encoding: Format,
         /// Who this IDD is supposed to be for
@@ -70,7 +70,7 @@ pub(crate) enum StimmgabelMode {
     RIdd {
         /// The value to verify
         value: String,
-        #[arg(default_value_t = Format::Der, long = "format")]
+        #[arg(default_value_t = Format::Der, long = "encoding")]
         /// The format, in which the value is encoded
         encoding: Format,
     },
