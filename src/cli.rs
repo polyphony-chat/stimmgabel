@@ -70,19 +70,17 @@ impl ValueEnum for KeyChoice {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Format {
-    Json,
     Der,
     Pem,
 }
 
 impl ValueEnum for Format {
     fn value_variants<'a>() -> &'a [Self] {
-        &[Format::Json, Format::Der, Format::Pem]
+        &[Format::Der, Format::Pem]
     }
 
     fn to_possible_value(&self) -> Option<clap::builder::PossibleValue> {
         match self {
-            Format::Json => Some(clap::builder::PossibleValue::new("json")),
             Format::Der => Some(clap::builder::PossibleValue::new("der")),
             Format::Pem => Some(clap::builder::PossibleValue::new("pem")),
         }
@@ -92,7 +90,6 @@ impl ValueEnum for Format {
 impl Display for Format {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Format::Json => write!(f, "json"),
             Format::Der => write!(f, "der"),
             Format::Pem => write!(f, "pem"),
         }
