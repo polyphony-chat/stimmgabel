@@ -8,7 +8,7 @@ use clap::builder::PossibleValue;
 use clap::{Parser, Subcommand, ValueEnum};
 
 #[derive(Debug, Clone, PartialEq, Eq, Parser)]
-#[command(name = "Stimmgabel")]
+#[command(name = "stimmgabel")]
 #[command(
     about = "A polyproto reference test implementation useful for verifying other implementations of the protocol."
 )]
