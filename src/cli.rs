@@ -54,16 +54,12 @@ impl ValueEnum for KeyChoice {
         ]
     }
 
-    fn to_possible_value(&self) -> Option<clap::builder::PossibleValue> {
+    fn to_possible_value(&self) -> Option<PossibleValue> {
         match self {
-            KeyChoice::ActorPrivate => Some(clap::builder::PossibleValue::new("actor-private")),
-            KeyChoice::ActorPublic => Some(clap::builder::PossibleValue::new("actor-public")),
-            KeyChoice::HomeserverPrivate => {
-                Some(clap::builder::PossibleValue::new("homeserver-private"))
-            }
-            KeyChoice::HomeserverPublic => {
-                Some(clap::builder::PossibleValue::new("homeserver-public"))
-            }
+            KeyChoice::ActorPrivate => Some(PossibleValue::new("actor-private")),
+            KeyChoice::ActorPublic => Some(PossibleValue::new("actor-public")),
+            KeyChoice::HomeserverPrivate => Some(PossibleValue::new("homeserver-private")),
+            KeyChoice::HomeserverPublic => Some(PossibleValue::new("homeserver-public")),
         }
     }
 }
@@ -79,10 +75,10 @@ impl ValueEnum for Format {
         &[Format::Der, Format::Pem]
     }
 
-    fn to_possible_value(&self) -> Option<clap::builder::PossibleValue> {
+    fn to_possible_value(&self) -> Option<PossibleValue> {
         match self {
-            Format::Der => Some(clap::builder::PossibleValue::new("der")),
-            Format::Pem => Some(clap::builder::PossibleValue::new("pem")),
+            Format::Der => Some(PossibleValue::new("der")),
+            Format::Pem => Some(PossibleValue::new("pem")),
         }
     }
 }
