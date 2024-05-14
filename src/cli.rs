@@ -6,6 +6,7 @@
 
 use std::fmt::Display;
 
+use clap::builder::PossibleValue;
 use clap::{Parser, Subcommand, ValueEnum};
 
 #[derive(Debug, Clone, PartialEq, Eq, Parser)]
@@ -102,43 +103,50 @@ impl Display for Format {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum StimmgabelMode {
-    Certificate,
+    ActorCertificate,
+    HomeserverCertificate,
     Message,
-    Csr,
-    Dn,
-    Rdn,
+    ActorCsr,
+    HomeserverCsr,
+    ActorDn,
+    HomeserverDn,
+    ActorRdn,
+    HomeserverRdn,
 }
 
 impl ValueEnum for StimmgabelMode {
     fn value_variants<'a>() -> &'a [Self] {
         &[
-            StimmgabelMode::Certificate,
+            StimmgabelMode::ActorCertificate,
+            StimmgabelMode::HomeserverCertificate,
             StimmgabelMode::Message,
-            StimmgabelMode::Csr,
-            StimmgabelMode::Dn,
-            StimmgabelMode::Rdn,
+            StimmgabelMode::ActorCsr,
+            StimmgabelMode::HomeserverCsr,
+            StimmgabelMode::ActorDn,
+            StimmgabelMode::HomeserverDn,
+            StimmgabelMode::ActorRdn,
+            StimmgabelMode::HomeserverRdn,
         ]
     }
 
-    fn to_possible_value(&self) -> Option<clap::builder::PossibleValue> {
+    fn to_possible_value(&self) -> Option<PossibleValue> {
         match self {
-            StimmgabelMode::Certificate => Some(clap::builder::PossibleValue::new("certificate")),
-            StimmgabelMode::Message => Some(clap::builder::PossibleValue::new("message")),
-            StimmgabelMode::Csr => Some(clap::builder::PossibleValue::new("csr")),
-            StimmgabelMode::Dn => Some(clap::builder::PossibleValue::new("dn")),
-            StimmgabelMode::Rdn => Some(clap::builder::PossibleValue::new("rdn")),
+            StimmgabelMode::ActorCertificate => Some(PossibleValue::new("certificate-actor")),
+            StimmgabelMode::HomeserverCertificate => {
+                Some(PossibleValue::new("certificate-homeserver"))
+            }
+            StimmgabelMode::Message => Some(PossibleValue::new("message")),
+            StimmgabelMode::ActorCsr => Some(PossibleValue::new("csr-actor")),
+            StimmgabelMode::HomeserverCsr => Some(PossibleValue::new("csr-homeserver")),
+            StimmgabelMode::ActorDn => Some(PossibleValue::new("dn-actor")),
+            StimmgabelMode::HomeserverDn => Some(PossibleValue::new("dn-homeserver")),
+            StimmgabelMode::ActorRdn => Some(PossibleValue::new("rdn-actor")),
+            StimmgabelMode::HomeserverRdn => Some(PossibleValue::new("rdn-homeserver")),
         }
     }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Rdn {
-    IdentityDescriptor,
-    SessionId,
-    SerialNumber,
-    AlgorithmIdentifier,
-    Signature,
-    Validity,
-    SubjectPublicKeyInfo,
-    Extensions,
+    // TODO: ADD RDN VARIANTS
 }
