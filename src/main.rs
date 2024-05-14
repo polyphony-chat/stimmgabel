@@ -35,6 +35,6 @@ fn main() {
             mode,
             value,
             format,
-        } => commands::verify::verify_input(mode, &value, format),
+        } => std::process::exit(commands::verify::verify_input(mode, &value, format)),
     }
 }

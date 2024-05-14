@@ -4,6 +4,9 @@
 
 use crate::cli::{Format, StimmgabelMode};
 
-pub(crate) fn verify_input(mode: StimmgabelMode, value: &str, format: Format) {
+/// Verify the well-formedness as well as the syntactical and cryptographical correctness of a given
+/// polyproto value. This function returns an exit code that can be used to signal the result of the
+/// verification.
+pub(crate) fn verify_input(mode: StimmgabelMode, value: &str, format: Format) -> i32 {
     todo!()
 }

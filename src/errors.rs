@@ -5,7 +5,7 @@
 use bitflags::bitflags;
 
 bitflags! {
-    pub struct ExitCode: u32 {
+    pub struct ExitCode: i32 {
         const GARBLED_INPUT = 1 << 0;
         const INVALID_SPKI = 1 << 1;
         const MISMATCHED_ISSUER_FOR_SUBJECT = 1 << 2;
