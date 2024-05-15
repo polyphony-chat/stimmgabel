@@ -68,7 +68,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: stimmgabel-${{ matrix.target }}-${{ github.event.inputs.tag }}
+          name: stimmgabel-${{ matrix.target }}-${{ github.event.inputs.tag }}.exe
           path: .\artifacts\stimmgabel-${{ matrix.target }}-${{ github.event.inputs.tag }}.exe
 
   build-macos:
@@ -89,7 +89,7 @@ jobs:
           rustup target add ${{ matrix.target }}
           cargo build --target ${{ matrix.target }} --release
           mkdir -p ./artifacts
-          mv ./target/${{ matrix.target }}/release/stimmgabel ./artifacts/${{ matrix.target }}-stimmgabel
+          mv ./target/${{ matrix.target }}/release/stimmgabel ./artifacts/stimmgabel-${{ matrix.target }}-${{ github.event.inputs.tag }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
@@ -103,12 +103,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Download artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
-          path: ./artifacts
+          path: ./artifacts/
 
       - name: Create and upload a Release
         uses: marvinpinto/action-automatic-releases@latest
