@@ -5,12 +5,15 @@
 use bitflags::Flags;
 use polyproto::certs::idcert::IdCert;
 use polyproto::certs::idcsr::IdCsr;
+use polyproto::certs::PublicKeyInfo;
 use polyproto::errors::composite::ConversionError;
+use polyproto::key::PublicKey;
 use polyproto::Constrained;
 
 use crate::cli::{Format, StimmgabelMode, Target};
 use crate::errors::ExitCode;
 use crate::polyproto::keys::PublicKeyEd25519;
+use crate::polyproto::message::Message;
 use crate::polyproto::signature::SignatureEd25519;
 
 pub(crate) fn conversion_error_to_exit_code(error: ConversionError) -> i32 {
@@ -92,7 +95,31 @@ fn verify_certificate(value: &str, encoding: Format, target: Target) -> i32 {
 /// message value. This function returns an exit code that can be used to signal the result of the
 /// verification.
 fn verify_message(value: &str, target: Target) -> i32 {
-    todo!()
+    let message_result: Result<Message, serde_json::Error> = serde_json::from_str(value);
+    if message_result.is_err() {
+        return ExitCode::INVALID_INPUT.bits();
+    }
+    let message = message_result.unwrap();
+    let signature = SignatureEd25519::from_bytes(&message.signature);
+    let public_key = match PublicKeyEd25519::try_from_public_key_info(PublicKeyInfo {
+        algorithm: SignatureEd25519::algorithm_identifier(),
+        public_key_bitstring: message.public_key,
+    }) {
+        Ok(key) => key,
+        Err(e) => return conversion_error_to_exit_code(e),
+    };
+    let verification_result = public_key.verify_signature(signature, value.as_bytes());
+    match verification_result {
+        Ok(_) => 0,
+        Err(error) => match error {
+            polyproto::errors::composite::PublicKeyError::BadSignature => {
+                ExitCode::BAD_SIGNATURE.bits()
+            }
+            polyproto::errors::composite::PublicKeyError::BadPublicKeyInfo => {
+                ExitCode::BAD_PUBLIC_KEY.bits()
+            }
+        },
+    }
 }
 
 /// Verify the well-formedness as well as the syntactical and cryptographical correctness of a given
