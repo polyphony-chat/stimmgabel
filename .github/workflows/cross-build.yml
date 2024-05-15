@@ -95,7 +95,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: stimmgabel-${{ matrix.target }}
-          path: ./artifacts/stimmgabel-${{ matrix.target }}
+          path: ./stimmgabel-${{ matrix.target }}
 
   release:
     name: Release
@@ -109,4 +109,4 @@ jobs:
 
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "artifacts/*"
+          artifacts: "./*"
