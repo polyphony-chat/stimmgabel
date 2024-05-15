@@ -43,9 +43,20 @@ pub(crate) enum StimmgabelMode {
         /// Who this certificate is supposed to be for
         target: Target,
     },
-    /// Verify a message for its cryptographical correctness
-    // TODO: What will this look like exactly?
-    Message { value: String },
+    /// The message to verify. Must be JSON encoded
+    Message {
+        /// The message to verify. Must be JSON encoded and match the following format:
+        /// {
+        ///     "message": "Any string",
+        ///     "signature": "Base64 encoded signature",
+        ///     "public_key": "Base64 encoded public key of the sender"
+        /// }.
+        /// The JSON may be minified and the order of the keys is unimportant
+        value: String,
+        /// Whether the message is to be verified from a home server or an actor perspective. Use
+        /// the other party's private key to sign the message
+        target: Target,
+    },
     /// Verify a polyproto Id-CSR for its well-formedness and syntactical and cryptographical correctness
     IdCsr {
         /// The value to verify

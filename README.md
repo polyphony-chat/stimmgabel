@@ -2,6 +2,21 @@
 
 polyproto reference test implementation used for verifying other implementations of the protocol.
 
+## Verifying a message
+
+polyproto does not dictate a specific format for messages. For this verification implementation, the following
+format is used:
+
+```json
+{
+    "message": "Any string",
+    "signature": "Base64 encoded signature",
+    "public_key": "Base64 encoded public key of the sender"
+}
+```
+
+Minifying the JSON is allowed, and the order of the keys is not important.
+
 ## Cryptography and Safety
 
 The cryptography, which includes keys and algorithmic implementations, supplied with this repository,
