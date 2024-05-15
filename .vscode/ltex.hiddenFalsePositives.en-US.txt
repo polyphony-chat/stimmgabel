@@ -1,2 +1,5 @@
 {"rule":"UPPERCASE_SENTENCE_START","sentence":"^\\Qstimmgabel\\E$"}
 {"rule":"UPPERCASE_SENTENCE_START","sentence":"^\\Qpolyproto reference test implementation used for verifying other implementations of the protocol.\\E$"}
+{"rule":"COMMA_PARENTHESIS_WHITESPACE","sentence":"^\\Q{\n\"message\": \"Any string\",\n\"signature\": \"Base64 encoded signature\",\n\"public_key\": \"Base64 encoded public key of the sender\"\n}\\E$"}
+{"rule":"COMMA_PARENTHESIS_WHITESPACE","sentence":"^\\QMust be JSON encoded and match the following format:\n{\n\"message\": \"Any string\",\n\"signature\": \"Base64 encoded signature\",\n\"public_key\": \"Base64 encoded public key of the sender\"\n}\\E$"}
+{"rule":"COMMA_PARENTHESIS_WHITESPACE","sentence":"^\\QMust be JSON encoded and match the following format:\n{\n\"message\": \"Any string\",\n\"signature\": \"Base64 encoded signature\",\n\"public_key\": \"Base64 encoded public key of the sender\"\n}.\\E$"}
