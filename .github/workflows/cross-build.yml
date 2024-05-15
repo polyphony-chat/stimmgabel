@@ -99,7 +99,7 @@ jobs:
 
   release:
     name: Release
-    needs: [build-linux, build-windows, build-macos]
+    needs: [build-linux, build-macos, build-windows]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -108,15 +108,11 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v2
 
-      - name: Create Tag
-        run: git tag ${{ github.event.inputs.tag }}
-
       - name: Create and upload a Release
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          draft: false
+          automatic_release_tag: "latest"
           prerelease: false
-          title: ${{ github.event.inputs.tag }}
+          title: "Release ${{ github.ref }}"
           files: |
-            ./artifacts/*
