@@ -116,3 +116,4 @@ jobs:
           prerelease: false
           title: "Release ${{ github.ref }}"
           files: |
+            ./*
