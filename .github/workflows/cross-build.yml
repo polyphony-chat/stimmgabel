@@ -8,8 +8,8 @@ on:
         required: true
 
 jobs:
-  build-linux-windows:
-    name: Build and Release for Linux and Windows
+  build-linux:
+    name: Build and Release for Linux
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -17,8 +17,6 @@ jobs:
           - x86_64-unknown-linux-gnu
           - i686-unknown-linux-gnu
           - aarch64-unknown-linux-gnu
-          - x86_64-pc-windows-gnu
-          - aarch64-pc-windows-msvc
 
     steps:
       - name: Checkout code
@@ -34,17 +32,44 @@ jobs:
           rustup target add ${{ matrix.target }}
           cross build --target ${{ matrix.target }} --release
           mkdir -p ./artifacts
-          if [ "${{ matrix.target }}" == "x86_64-pc-windows-gnu" ] || [ "${{ matrix.target }}" == "aarch64-pc-windows-msvc" ]; then
-            mv ./target/${{ matrix.target }}/release/stimmgabel.exe ./artifacts/${{ matrix.target }}-stimmgabel.exe
-          else
-            mv ./target/${{ matrix.target }}/release/stimmgabel ./artifacts/${{ matrix.target }}-stimmgabel
-          fi
+          mv ./target/${{ matrix.target }}/release/stimmgabel ./artifacts/stimmgabel-${{ matrix.target }}-${{ github.event.inputs.tag }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: stimmgabel-${{ matrix.target }}
-          path: ./artifacts/${{ matrix.target }}-stimmgabel*
+          name: stimmgabel-${{ matrix.target }}-${{ github.event.inputs.tag }}
+          path: ./artifacts/stimmgabel-${{ matrix.target }}-${{ github.event.inputs.tag }}
+
+  build-windows:
+    name: Build and Release for Windows
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        target:
+          - x86_64-pc-windows-gnu
+          - aarch64-pc-windows-msvc
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install Rust
+        run: |
+          choco install rust-ms
+          echo "C:\Program Files\Rust stable GNU\bin" >> $GITHUB_PATH
+          rustup target add ${{ matrix.target }}
+
+      - name: Build
+        run: |
+          cargo build --target ${{ matrix.target }} --release
+          mkdir .\artifacts
+          move .\target\${{ matrix.target }}\release\stimmgabel.exe .\artifacts\stimmgabel-${{ matrix.target }}-${{ github.event.inputs.tag }}.exe
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: stimmgabel-${{ matrix.target }}-${{ github.event.inputs.tag }}
+          path: .\artifacts\stimmgabel-${{ matrix.target }}-${{ github.event.inputs.tag }}.exe
 
   build-macos:
     name: Build and Release for MacOS
@@ -69,12 +94,12 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: stimmgabel-${{ matrix.target }}
-          path: ./artifacts/${{ matrix.target }}-stimmgabel
+          name: stimmgabel-${{ matrix.target }}-${{ github.event.inputs.tag }}
+          path: ./artifacts/stimmgabel-${{ matrix.target }}-${{ github.event.inputs.tag }}
 
   release:
     name: Release
-    needs: [build-linux-windows, build-macos]
+    needs: [build-linux, build-windows, build-macos]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
