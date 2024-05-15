@@ -1,11 +1,25 @@
 # stimmgabel
 
-polyproto reference test implementation used for verifying other implementations of the protocol.
+Command-line utility implementation of polyproto, used for verifying other implementations of the protocol.
+
+## Motivation
+
+Getting all aspects right when implementing a protocol can be difficult - especially when the protocol
+is new and does not have a lot of implementations to compare against. Stimmgabel (German for 'tuning fork')
+is a command-line utility to use as a verification tool for other implementations of polyproto.
+
+Since this is a binary and not a library, it is fairly straightforward to use in various programming languages,
+by calling the binary with the desired arguments.
+
+## Installation
+
+Download the latest release from the [releases page](https://github.com/polyphony-chat/stimmgabel/releases).
+Alternatively, using the Rust tool chain, you can clone this repository and build the binary yourself.
 
 ## Verifying a message
 
 polyproto does not dictate a specific format for messages. For this verification implementation, the following
-format is used:
+format is used, when passing a message to be verified:
 
 ```json
 {
@@ -19,14 +33,12 @@ Minifying the JSON is allowed, and the order of the keys is not important.
 
 ## Cryptography and Safety
 
-The cryptography, which includes keys and algorithmic implementations, supplied with this repository,
-is ONLY to be used for testing purposes.
+polyproto does not specify a signature algorithm. For two implementations to be compatible, they must offer
+an overlapping set of signature algorithms. Stimmgabel only supports ED25519, using the ed25519-dalek crate,
+as ED25519 is the currently recommended signature algorithm for polyproto.
 
-This software makes use of the ed25519-dalek crate to implement polyproto using ED25519 as a signature
-algorithm. Please read up on the ed25519-dalek crate if you are interested in the safety guarantees made by this crate.
-
-This software has not undergone any sort of security audit and, at the time of writing this, has
-been written by one person who is not a cryptography expert. You MUST not rely on this software to be
-"bulletproof".
-
-The README is not done yet. So is the code. ;3
+> [!IMPORTANT]
+> This repository's cryptography, including keys and algorithms, is strictly for testing purposes.
+> It uses the ed25519-dalek crate to implement polyproto with ED25519 as a signature algorithm.
+> Learn about the safety guarantees of the ed25519-dalek crate for more information.
+> This software has not received a security audit. No guarantees about its safety can be made.
