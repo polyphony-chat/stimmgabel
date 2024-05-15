@@ -7,10 +7,6 @@ repository = "https://github.com/polyphony-chat/stimmgabel"
 categories = ["command-line-utilities", "development-tools::testing"]
 description = " polyproto reference test implementation used for verifying other implementations of the protocol."
 
-[lib]
-name = "stimmgabellib"
-crate-type = ["lib", "cdylib", "rlib"]
-
 [dependencies]
 clap = { version = "4.5", features = ["derive"] }
 tokio = { version = "1.36", features = ["rt-multi-thread", "macros", "net"] }
@@ -19,3 +15,5 @@ lazy_static = "1.4"
 polyproto = { git = "https://github.com/polyphony-chat/polyproto.git", branch = "routes" }
 ed25519-dalek = { version = "2.1", features = ["rand_core"] }
 bitflags = "2.5"
+serde = { version = "1.0.202", features = ["derive"] }
+serde_json = "1.0.117"
