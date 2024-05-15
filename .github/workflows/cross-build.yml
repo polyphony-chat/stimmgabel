@@ -33,6 +33,7 @@ jobs:
 
       - name: Build
         run: |
+          rustup target add ${{ matrix.target }}
           cross build --target ${{ matrix.target }} --release
           mkdir -p ./artifacts
           if [ "${{ matrix.target }}" == "x86_64-pc-windows-gnu" ] || [ "${{ matrix.target }}" == "aarch64-pc-windows-msvc" ]; then
