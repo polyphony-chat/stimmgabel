@@ -2,13 +2,13 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use bitflags::Flags;
 use polyproto::certs::idcert::IdCert;
 use polyproto::certs::idcsr::IdCsr;
 use polyproto::certs::PublicKeyInfo;
+use polyproto::der::asn1::BitString;
 use polyproto::errors::composite::ConversionError;
 use polyproto::key::PublicKey;
-use polyproto::Constrained;
+use polyproto::signature::Signature;
 
 use crate::cli::{Format, StimmgabelMode, Target};
 use crate::errors::ExitCode;
@@ -54,18 +54,12 @@ pub(crate) fn verify_input(mode: StimmgabelMode) -> i32 {
             encoding,
             target,
         } => verify_certificate(&value, encoding, target),
-        StimmgabelMode::Message { value, target } => verify_message(&value, target),
+        StimmgabelMode::Message { value } => verify_message(&value),
         StimmgabelMode::IdCsr {
             value,
             encoding,
             target,
         } => verify_csr(&value, encoding, target),
-        StimmgabelMode::Idd {
-            value,
-            encoding,
-            target,
-        } => verify_dn(&value, encoding, target),
-        StimmgabelMode::RIdd { value, encoding } => verify_rdn(&value, encoding),
     }
 }
 
@@ -94,21 +88,24 @@ fn verify_certificate(value: &str, encoding: Format, target: Target) -> i32 {
 /// Verify the cryptographical correctness of a given
 /// message value. This function returns an exit code that can be used to signal the result of the
 /// verification.
-fn verify_message(value: &str, target: Target) -> i32 {
+fn verify_message(value: &str) -> i32 {
     let message_result: Result<Message, serde_json::Error> = serde_json::from_str(value);
     if message_result.is_err() {
         return ExitCode::INVALID_INPUT.bits();
     }
     let message = message_result.unwrap();
-    let signature = SignatureEd25519::from_bytes(&message.signature);
+    let signature = SignatureEd25519::from_bytes(message.signature.as_bytes());
     let public_key = match PublicKeyEd25519::try_from_public_key_info(PublicKeyInfo {
         algorithm: SignatureEd25519::algorithm_identifier(),
-        public_key_bitstring: message.public_key,
+        public_key_bitstring: {
+            let unused_bits = message.public_key.len() % 8;
+            BitString::new(unused_bits as u8, message.public_key).unwrap()
+        },
     }) {
         Ok(key) => key,
         Err(e) => return conversion_error_to_exit_code(e),
     };
-    let verification_result = public_key.verify_signature(signature, value.as_bytes());
+    let verification_result = public_key.verify_signature(&signature, value.as_bytes());
     match verification_result {
         Ok(_) => 0,
         Err(error) => match error {
@@ -141,25 +138,5 @@ fn verify_csr(value: &str, encoding: Format, target: Target) -> i32 {
     match validation_result {
         Ok(_) => 0,
         Err(error) => conversion_error_to_exit_code(error),
-    }
-}
-
-/// Verify the well-formedness as well as the syntactical and cryptographical correctness of a given
-/// DN value. This function returns an exit code that can be used to signal the result of the
-/// verification.
-fn verify_dn(value: &str, encoding: Format, target: Target) -> i32 {
-    match encoding {
-        Format::Der => todo!(),
-        Format::Pem => todo!(),
-    }
-}
-
-/// Verify the well-formedness as well as the syntactical and cryptographical correctness of a given
-/// RDN value. This function returns an exit code that can be used to signal the result of the
-/// verification.
-fn verify_rdn(value: &str, encoding: Format) -> i32 {
-    match encoding {
-        Format::Der => todo!(),
-        Format::Pem => todo!(),
     }
 }

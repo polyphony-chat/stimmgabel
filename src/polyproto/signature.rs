@@ -33,7 +33,7 @@ impl Signature for SignatureEd25519 {
         }
     }
 
-    fn from_bitstring(signature: &[u8]) -> Self {
+    fn from_bytes(signature: &[u8]) -> Self {
         let mut sig = [0u8; 64];
         sig.copy_from_slice(signature);
         SignatureEd25519 {

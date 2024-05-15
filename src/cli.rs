@@ -53,9 +53,6 @@ pub(crate) enum StimmgabelMode {
         /// }.
         /// The JSON may be minified and the order of the keys is unimportant
         value: String,
-        /// Whether the message is to be verified from a home server or an actor perspective. Use
-        /// the other party's private key to sign the message
-        target: Target,
     },
     /// Verify a polyproto Id-CSR for its well-formedness and syntactical and cryptographical correctness
     IdCsr {
@@ -66,24 +63,6 @@ pub(crate) enum StimmgabelMode {
         encoding: Format,
         /// Who this CSR is supposed to be for
         target: Target,
-    },
-    /// Verify a polyproto identity descriptor (IDD) for its well-formedness and syntactical correctness
-    Idd {
-        /// The value to verify
-        value: String,
-        #[arg(default_value_t = Format::Der, long = "encoding")]
-        /// The format, in which the value is encoded
-        encoding: Format,
-        /// Who this IDD is supposed to be for
-        target: Target,
-    },
-    /// Verify a relative polyproto identity descriptor name (RIDD) for its well-formedness and syntactical correctness
-    RIdd {
-        /// The value to verify
-        value: String,
-        #[arg(default_value_t = Format::Der, long = "encoding")]
-        /// The format, in which the value is encoded
-        encoding: Format,
     },
 }
 /// The different keys that can be printed
@@ -169,9 +148,4 @@ impl Display for Target {
             Target::Homeserver => write!(f, "homeserver"),
         }
     }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum Rdn {
-    // TODO: ADD RDN VARIANTS
 }
