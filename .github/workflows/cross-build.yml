@@ -8,8 +8,8 @@ on:
         required: true
 
 jobs:
-  build:
-    name: Build and Release
+  build-linux-windows:
+    name: Build and Release for Linux and Windows
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -17,8 +17,6 @@ jobs:
           - x86_64-unknown-linux-gnu
           - i686-unknown-linux-gnu
           - aarch64-unknown-linux-gnu
-          - aarch64-apple-darwin
-          - x86_64-apple-darwin
           - x86_64-pc-windows-gnu
           - aarch64-pc-windows-msvc
 
@@ -46,11 +44,37 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: ${{ github.repository }}-${{ matrix.target }}
-          path: ./artifacts/${{ matrix.target }}-my_binary
+          path: ./artifacts/${{ matrix.target }}-stimmgabel*
+
+  build-macos:
+    name: Build and Release for MacOS
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        target:
+          - aarch64-apple-darwin
+          - x86_64-apple-darwin
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          rustup target add ${{ matrix.target }}
+          cargo build --target ${{ matrix.target }} --release
+          mkdir -p ./artifacts
+          mv ./target/${{ matrix.target }}/release/stimmgabel ./artifacts/${{ matrix.target }}-stimmgabel
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.repository }}-${{ matrix.target }}
+          path: ./artifacts/${{ matrix.target }}-stimmgabel
 
   release:
     name: Release
-    needs: build
+    needs: [build-linux-windows, build-macos]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -70,4 +94,4 @@ jobs:
           prerelease: false
           title: ${{ github.event.inputs.tag }}
           files: |
-            ./*
+            ./artifacts/*
