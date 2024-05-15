@@ -20,7 +20,7 @@ use cli::{CliArguments, Commands};
 
 pub(crate) mod cli;
 pub(crate) mod commands;
-pub(crate) mod errors;
+pub mod errors;
 pub(crate) mod polyproto;
 
 fn main() {

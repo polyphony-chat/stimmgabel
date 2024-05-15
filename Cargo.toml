@@ -8,7 +8,7 @@ categories = ["command-line-utilities", "development-tools::testing"]
 description = " polyproto reference test implementation used for verifying other implementations of the protocol."
 
 [dependencies]
-polyproto = { git = "https://github.com/polyphony-chat/polyproto.git", branch = "routes", default-features = false }
+polyproto = { version = "0.9.0-alpha.3", default-features = false }
 clap = { version = "4.5", features = ["derive"] }
 tokio = { version = "1.36", features = ["rt-multi-thread", "macros", "net"] }
 colored = "2.1"

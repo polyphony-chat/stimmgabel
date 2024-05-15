@@ -16,6 +16,26 @@ by calling the binary with the desired arguments.
 Download the latest release from the [releases page](https://github.com/polyphony-chat/stimmgabel/releases).
 Alternatively, using the Rust tool chain, you can clone this repository and build the binary yourself.
 
+After acquiring the binary, you can execute it from the command line:
+
+```sh
+stimmgabel --help
+```
+
+## Interpreting the output
+
+The program will exit with a status code of 0 if the verification was successful. Any other exit code
+indicates that there was an error during the verification process. The exit code is encoded as a bit flag,
+where the bits are set as follows:
+
+| Error                                                                            | Bit flag |
+| -------------------------------------------------------------------------------- | -------- |
+| `GARBLED_INPUT` (Unreadable input)                                               | 1 << 0   |
+| `INVALID_INPUT` (Readable, but wrong input)                                      | 1 << 1   |
+| `CONSTRAINT_VIOLATION` (Validation criterion not met)                            | 1 << 2   |
+| `BAD_SIGNATURE` (Signature does not match data)                                  | 1 << 3   |
+| `BAD_PUBLIC_KEY` (Public key does not match signature or public key is weak/bad) | 1 << 4   |
+
 ## Verifying a message
 
 polyproto does not dictate a specific format for messages. For this verification implementation, the following
