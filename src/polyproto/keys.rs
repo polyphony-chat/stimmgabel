@@ -34,9 +34,10 @@ impl polyproto::key::PublicKey<SignatureEd25519> for PublicKeyEd25519 {
     }
 
     fn public_key_info(&self) -> polyproto::certs::PublicKeyInfo {
+        let unused_bits = self.key.to_bytes().len() % 8;
         PublicKeyInfo {
             algorithm: SignatureEd25519::algorithm_identifier(),
-            public_key_bitstring: BitString::from_bytes(&self.key.to_bytes()).unwrap(),
+            public_key_bitstring: BitString::new(unused_bits as u8, self.key.to_bytes()).unwrap(),
         }
     }
 
