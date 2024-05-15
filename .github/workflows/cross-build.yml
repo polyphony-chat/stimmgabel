@@ -68,6 +68,6 @@ jobs:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           draft: false
           prerelease: false
-          tag_name: ${{ github.event.inputs.tag }}
+          title: ${{ github.event.inputs.tag }}
           files: |
             ./*
