@@ -30,13 +30,13 @@ jobs:
           rustup target add ${{ matrix.target }}
           cross build --target ${{ matrix.target }} --release
           mkdir -p ./artifacts
-          mv ./target/${{ matrix.target }}/release/stimmgabel ./artifacts/stimmgabel-${{ matrix.target }}-${{ github.event.inputs.tag }}
+          mv ./target/${{ matrix.target }}/release/stimmgabel ./artifacts/stimmgabel-${{ matrix.target }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: stimmgabel-${{ matrix.target }}-${{ github.event.inputs.tag }}
-          path: ./artifacts/stimmgabel-${{ matrix.target }}-${{ github.event.inputs.tag }}
+          name: stimmgabel-${{ matrix.target }}
+          path: ./artifacts/stimmgabel-${{ matrix.target }}
 
   build-windows:
     name: Build and Release for Windows
@@ -63,13 +63,13 @@ jobs:
         run: |
           cargo build --target ${{ matrix.target }} --release
           mkdir .\artifacts
-          move .\target\${{ matrix.target }}\release\stimmgabel.exe .\artifacts\stimmgabel-${{ matrix.target }}-${{ github.event.inputs.tag }}.exe
+          move .\target\${{ matrix.target }}\release\stimmgabel.exe .\artifacts\stimmgabel-${{ matrix.target }}.exe
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: stimmgabel-${{ matrix.target }}-${{ github.event.inputs.tag }}.exe
-          path: .\artifacts\stimmgabel-${{ matrix.target }}-${{ github.event.inputs.tag }}.exe
+          name: stimmgabel-${{ matrix.target }}.exe
+          path: .\artifacts\stimmgabel-${{ matrix.target }}.exe
 
   build-macos:
     name: Build and Release for MacOS
@@ -89,22 +89,19 @@ jobs:
           rustup target add ${{ matrix.target }}
           cargo build --target ${{ matrix.target }} --release
           mkdir -p ./artifacts
-          mv ./target/${{ matrix.target }}/release/stimmgabel ./artifacts/stimmgabel-${{ matrix.target }}-${{ github.event.inputs.tag }}
+          mv ./target/${{ matrix.target }}/release/stimmgabel ./artifacts/stimmgabel-${{ matrix.target }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: stimmgabel-${{ matrix.target }}-${{ github.event.inputs.tag }}
-          path: ./artifacts/stimmgabel-${{ matrix.target }}-${{ github.event.inputs.tag }}
+          name: stimmgabel-${{ matrix.target }}
+          path: ./artifacts/stimmgabel-${{ matrix.target }}
 
   release:
     name: Release
     needs: [build-linux, build-macos, build-windows]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
@@ -114,8 +111,8 @@ jobs:
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "${{ github.event.inputs.tag }}"
+          automatic_release_tag: "latest"
           prerelease: false
           title: "Release ${{ github.ref }}"
           files: |
-            ./artifacts/*
+            /home/runner/work/stimmgabel/stimmgabel/artifacts/*
