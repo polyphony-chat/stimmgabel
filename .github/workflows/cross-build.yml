@@ -107,6 +107,8 @@ jobs:
 
       - name: Download artifacts
         uses: actions/download-artifact@v2
+        with:
+          path: ./artifacts
 
       - name: Create and upload a Release
         uses: marvinpinto/action-automatic-releases@latest
@@ -116,4 +118,4 @@ jobs:
           prerelease: false
           title: "Release ${{ github.ref }}"
           files: |
-            ./*
+            ./artifacts/*
