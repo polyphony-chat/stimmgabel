@@ -27,7 +27,7 @@ pub(crate) fn conversion_error_to_exit_code(error: ConversionError) -> i32 {
             ExitCode::GARBLED_INPUT.bits()
         }
         polyproto::errors::composite::ConversionError::IdCertError(idcert_error) => {
-            return match idcert_error {
+            match idcert_error {
                 polyproto::errors::composite::PublicKeyError::BadSignature => {
                     ExitCode::BAD_SIGNATURE.bits()
                 }
@@ -51,7 +51,7 @@ pub(crate) fn verify_input(mode: StimmgabelMode) -> i32 {
             encoding,
             target,
         } => verify_certificate(&value, encoding, target),
-        StimmgabelMode::Message { value } => verify_message(&value),
+        StimmgabelMode::Message { value, target } => verify_message(&value, target),
         StimmgabelMode::IdCsr {
             value,
             encoding,
@@ -91,7 +91,7 @@ fn verify_certificate(value: &str, encoding: Format, target: Target) -> i32 {
 /// Verify the cryptographical correctness of a given
 /// message value. This function returns an exit code that can be used to signal the result of the
 /// verification.
-fn verify_message(value: &str) -> i32 {
+fn verify_message(value: &str, target: Target) -> i32 {
     todo!()
 }
 
