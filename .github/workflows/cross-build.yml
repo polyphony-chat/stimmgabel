@@ -92,7 +92,7 @@ jobs:
           mv ./target/${{ matrix.target }}/release/stimmgabel ./artifacts/stimmgabel-${{ matrix.target }}-${{ github.event.inputs.tag }}
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: stimmgabel-${{ matrix.target }}-${{ github.event.inputs.tag }}
           path: ./artifacts/stimmgabel-${{ matrix.target }}-${{ github.event.inputs.tag }}
