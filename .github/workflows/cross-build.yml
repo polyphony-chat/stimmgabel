@@ -55,10 +55,11 @@ jobs:
 
       - name: Install Rust
         run: |
-          choco install rust-ms
-          echo "C:\Program Files\Rust stable GNU\bin" >> $GITHUB_PATH
-          rustup target add aarch64-pc-windows-msvc
-          rustup target add x86_64-pc-windows-gnu
+          choco install rustup.install
+          rustup install stable
+          rustup update stable
+          rustup default stable
+          rustup target add ${{ matrix.target }}
 
       - name: Build
         run: |
