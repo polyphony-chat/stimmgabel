@@ -16,6 +16,6 @@ clap = { version = "4.5", features = ["derive"] }
 tokio = { version = "1.36", features = ["rt-multi-thread", "macros", "net"] }
 colored = "2.1"
 lazy_static = "1.4"
-polyproto = "0.9.0-alpha.1"
+polyproto = { git = "https://github.com/polyphony-chat/polyproto.git", branch = "routes" }
 ed25519-dalek = { version = "2.1", features = ["rand_core"] }
 bitflags = "2.5"
