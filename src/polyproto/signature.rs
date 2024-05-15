@@ -21,6 +21,7 @@ impl Signature for SignatureEd25519 {
 
     fn algorithm_identifier() -> polyproto::spki::AlgorithmIdentifierOwned {
         polyproto::spki::AlgorithmIdentifierOwned {
+            // Unwrap is ok because the OID is hard-coded and cannot be invalid
             oid: polyproto::der::asn1::ObjectIdentifier::from_str("1.3.101.112").unwrap(),
             parameters: None,
         }
