@@ -1,11 +1,9 @@
 name: Rust Cross Compile Binary Release
 
 on:
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: "Tag to create for this release"
-        required: true
+  push:
+    tags:
+      - "*"
 
 jobs:
   build-linux:
