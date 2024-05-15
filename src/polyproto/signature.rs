@@ -12,6 +12,12 @@ pub struct SignatureEd25519 {
     pub(crate) signature: ed25519_dalek_Signature,
 }
 
+impl std::fmt::Display for SignatureEd25519 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self.signature)
+    }
+}
+
 impl Signature for SignatureEd25519 {
     type Signature = ed25519_dalek_Signature;
 
