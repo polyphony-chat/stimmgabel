@@ -15,8 +15,23 @@ static ED25519_PUBLIC_HOMESERVER: &str = "-----BEGIN PUBLIC KEY-----
 MCowBQYDK2VwAyEAy7tqf5pG2XTJg2zh451RUr2rp02Nl7E1/k4LU+UzJeE=
 -----END PUBLIC KEY-----";
 
+lazy_static! {
+    pub static ref ED25519_PRIVATE_ACTOR_KEY: SigningKey =
+        SigningKey::from_pkcs8_pem(ED25519_PRIVATE_ACTOR).unwrap();
+    pub static ref ED25519_PUBLIC_ACTOR_KEY: VerifyingKey =
+        VerifyingKey::from_public_key_pem(ED25519_PUBLIC_ACTOR).unwrap();
+    pub static ref ED25519_PRIVATE_HOMESERVER_KEY: SigningKey =
+        SigningKey::from_pkcs8_pem(ED25519_PRIVATE_HOMESERVER).unwrap();
+    pub static ref ED25519_PUBLIC_HOMESERVER_KEY: VerifyingKey =
+        VerifyingKey::from_public_key_pem(ED25519_PUBLIC_HOMESERVER).unwrap();
+}
+
+use ::polyproto::spki::DecodePublicKey;
 use clap::Parser;
 use cli::{CliArguments, Commands};
+use ed25519_dalek::pkcs8::DecodePrivateKey;
+use ed25519_dalek::{SigningKey, VerifyingKey};
+use lazy_static::lazy_static;
 
 pub(crate) mod cli;
 pub(crate) mod commands;

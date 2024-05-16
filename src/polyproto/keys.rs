@@ -7,13 +7,15 @@ use ed25519_dalek::{SigningKey, VerifyingKey};
 use polyproto::certs::PublicKeyInfo;
 use polyproto::der::asn1::BitString;
 use polyproto::signature::Signature;
+#[cfg(test)]
+use rand::rngs::OsRng;
 
 use super::signature::SignatureEd25519;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct PrivateKeyEd25519 {
     pub public_key: PublicKeyEd25519,
-    key: SigningKey,
+    pub(crate) key: SigningKey,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -75,5 +77,16 @@ impl polyproto::key::PrivateKey<crate::polyproto::signature::SignatureEd25519>
     fn sign(&self, data: &[u8]) -> SignatureEd25519 {
         let signature = self.key.clone().sign(data);
         SignatureEd25519 { signature }
+    }
+}
+
+#[cfg(test)]
+impl PrivateKeyEd25519 {
+    pub fn gen_keypair(csprng: &mut OsRng) -> Self {
+        let key = SigningKey::generate(csprng);
+        let public_key = PublicKeyEd25519 {
+            key: key.verifying_key(),
+        };
+        Self { public_key, key }
     }
 }

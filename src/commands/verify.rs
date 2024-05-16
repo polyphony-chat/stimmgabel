@@ -15,6 +15,7 @@ use crate::errors::ExitCode;
 use crate::polyproto::keys::PublicKeyEd25519;
 use crate::polyproto::message::Message;
 use crate::polyproto::signature::SignatureEd25519;
+use crate::ED25519_PUBLIC_HOMESERVER_KEY;
 
 pub(crate) fn conversion_error_to_exit_code(error: ConversionError) -> i32 {
     match error {
@@ -75,6 +76,13 @@ fn verify_certificate(value: &str, encoding: Format, target: Target) -> i32 {
         return conversion_error_to_exit_code(error);
     }
     let certificate = certificate_result.unwrap();
+    match ED25519_PUBLIC_HOMESERVER_KEY.verify_strict(
+        &certificate.clone().to_der().unwrap(),
+        certificate.signature.as_signature(),
+    ) {
+        Ok(_) => (),
+        Err(_) => return ExitCode::BAD_SIGNATURE.bits(),
+    }
     let validation_result = match target {
         Target::Actor => certificate.validate_actor(),
         Target::Homeserver => certificate.validate_home_server(),
@@ -131,6 +139,12 @@ fn verify_csr(value: &str, encoding: Format, target: Target) -> i32 {
         return conversion_error_to_exit_code(error);
     }
     let csr = csr_result.unwrap();
+    match ED25519_PUBLIC_HOMESERVER_KEY
+        .verify_strict(&csr.clone().to_der().unwrap(), csr.signature.as_signature())
+    {
+        Ok(_) => (),
+        Err(_) => return ExitCode::BAD_SIGNATURE.bits(),
+    }
     let validation_result = match target {
         Target::Actor => csr.validate_actor(),
         Target::Homeserver => csr.validate_home_server(),
@@ -138,5 +152,62 @@ fn verify_csr(value: &str, encoding: Format, target: Target) -> i32 {
     match validation_result {
         Ok(_) => 0,
         Err(error) => conversion_error_to_exit_code(error),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::str::FromStr;
+
+    use polyproto::certs::capabilities::Capabilities;
+    use polyproto::certs::idcsr::IdCsr;
+    use polyproto::RdnSequence;
+
+    use crate::polyproto::keys::{PrivateKeyEd25519, PublicKeyEd25519};
+    use crate::polyproto::signature::SignatureEd25519;
+
+    use super::verify_csr;
+
+    #[test]
+    fn verify_home_server_signed_actor_csr() {
+        let signing_key =
+            ed25519_dalek::SigningKey::from_bytes(crate::ED25519_PRIVATE_ACTOR_KEY.as_bytes());
+        let verifying_key =
+            ed25519_dalek::VerifyingKey::from_bytes(crate::ED25519_PUBLIC_ACTOR_KEY.as_bytes())
+                .unwrap();
+        let public_key = PublicKeyEd25519 { key: verifying_key };
+        let private_key = PrivateKeyEd25519 {
+            public_key,
+            key: signing_key,
+        };
+        let actor_cert_csr =
+            IdCsr::<SignatureEd25519, PublicKeyEd25519>::new(&RdnSequence::from_str("CN=flori,DC=www,DC=polyphony,DC=chat,UID=flori@polyphony.chat,uniqueIdentifier=client1").unwrap(), &private_key, &Capabilities::default_actor()).unwrap();
+        let exit_code = verify_csr(
+            actor_cert_csr
+                .to_pem(polyproto::der::pem::LineEnding::LF)
+                .unwrap()
+                .as_str(),
+            crate::cli::Format::Pem,
+            crate::cli::Target::Actor,
+        );
+        assert_eq!(exit_code, 0)
+    }
+
+    #[test]
+    fn other_key_cannot_pass_verification_csr() {
+        let mut csprng = rand::rngs::OsRng;
+        // Generate a key pair
+        let private_key = PrivateKeyEd25519::gen_keypair(&mut csprng);
+        let actor_cert_csr =
+            IdCsr::<SignatureEd25519, PublicKeyEd25519>::new(&RdnSequence::from_str("CN=flori,DC=www,DC=polyphony,DC=chat,UID=flori@polyphony.chat,uniqueIdentifier=client1").unwrap(), &private_key, &Capabilities::default_actor()).unwrap();
+        let exit_code = verify_csr(
+            actor_cert_csr
+                .to_pem(polyproto::der::pem::LineEnding::LF)
+                .unwrap()
+                .as_str(),
+            crate::cli::Format::Pem,
+            crate::cli::Target::Actor,
+        );
+        assert_ne!(exit_code, 0)
     }
 }
