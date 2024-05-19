@@ -2,6 +2,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+use ed25519_dalek::VerifyingKey;
+use log::*;
 use polyproto::certs::idcert::IdCert;
 use polyproto::certs::idcsr::IdCsr;
 use polyproto::certs::PublicKeyInfo;
@@ -15,7 +17,7 @@ use crate::errors::ExitCode;
 use crate::polyproto::keys::PublicKeyEd25519;
 use crate::polyproto::message::Message;
 use crate::polyproto::signature::SignatureEd25519;
-use crate::ED25519_PUBLIC_HOMESERVER_KEY;
+use crate::{ED25519_PUBLIC_ACTOR_KEY, ED25519_PUBLIC_HOMESERVER_KEY};
 
 pub(crate) fn conversion_error_to_exit_code(error: ConversionError) -> i32 {
     match error {
@@ -139,11 +141,21 @@ fn verify_csr(value: &str, encoding: Format, target: Target) -> i32 {
         return conversion_error_to_exit_code(error);
     }
     let csr = csr_result.unwrap();
-    match ED25519_PUBLIC_HOMESERVER_KEY
-        .verify_strict(&csr.clone().to_der().unwrap(), csr.signature.as_signature())
+    let verifying_key = match target {
+        Target::Actor => ED25519_PUBLIC_ACTOR_KEY.to_bytes(),
+        Target::Homeserver => ED25519_PUBLIC_HOMESERVER_KEY.to_bytes(),
+    };
+    match VerifyingKey::from_bytes(&verifying_key)
+        .unwrap()
+        .verify_strict(&csr.signature_data().unwrap(), csr.signature.as_signature())
     {
-        Ok(_) => (),
-        Err(_) => return ExitCode::BAD_SIGNATURE.bits(),
+        Ok(_) => {
+            debug!("Signature verification successful")
+        }
+        Err(e) => {
+            error!("Signature verification failed: {}", e);
+            return ExitCode::BAD_SIGNATURE.bits();
+        }
     }
     let validation_result = match target {
         Target::Actor => csr.validate_actor(),
@@ -170,6 +182,7 @@ mod tests {
 
     #[test]
     fn verify_home_server_signed_actor_csr() {
+        env_logger::try_init().unwrap_or(());
         let signing_key =
             ed25519_dalek::SigningKey::from_bytes(crate::ED25519_PRIVATE_ACTOR_KEY.as_bytes());
         let verifying_key =
@@ -177,7 +190,7 @@ mod tests {
                 .unwrap();
         let public_key = PublicKeyEd25519 { key: verifying_key };
         let private_key = PrivateKeyEd25519 {
-            public_key,
+            public_key: public_key.clone(),
             key: signing_key,
         };
         let actor_cert_csr =
@@ -195,6 +208,7 @@ mod tests {
 
     #[test]
     fn other_key_cannot_pass_verification_csr() {
+        env_logger::try_init().unwrap_or(());
         let mut csprng = rand::rngs::OsRng;
         // Generate a key pair
         let private_key = PrivateKeyEd25519::gen_keypair(&mut csprng);
